@@ -8,10 +8,8 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Get the API URL from the environment variable
-        const response = await fetch(process.env.NEXT_PUBLIC_API_URL, {
-          method: 'GET',
-        });
+        // Fetch data from the API using the environment variable
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
