@@ -1,19 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
 
+  // Debug: Log Lambda URL on load
+  useEffect(() => {
+    console.log('Lambda URL:', process.env.NEXT_PUBLIC_LAMBDA_URL)
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!input.trim()) return
+
+    const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL
+    if (!lambdaUrl) {
+      console.error('Lambda URL not configured')
+      setMessages(prev => [...prev, { 
+        type: 'bot', 
+        content: 'Error: Lambda URL not configured. Please check environment variables.' 
+      }])
+      return
+    }
 
     setIsLoading(true)
     setMessages(prev => [...prev, { type: 'user', content: input }])
     
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_LAMBDA_URL, {
+      console.log('Sending request to:', lambdaUrl)
+      const response = await fetch(lambdaUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,15 +37,43 @@ export default function Home() {
         body: JSON.stringify({ prompt: input }),
       })
       
-      const data = await response.json()
-      setMessages(prev => [...prev, { type: 'bot', content: data.response }])
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const text = await response.text()
+      console.log('Raw response:', text)
+      
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch (e) {
+        console.error('JSON parse error:', e)
+        throw new Error('Invalid response format')
+      }
+      
+      console.log('Parsed data:', data)
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      
+      setMessages(prev => [...prev, { 
+        type: 'bot', 
+        content: data.response || 'No response received' 
+      }])
     } catch (error) {
-      console.error('Error:', error)
-      setMessages(prev => [...prev, { type: 'bot', content: 'Sorry, something went wrong.' }])
+      console.error('Error details:', error)
+      setMessages(prev => [...prev, { 
+        type: 'bot', 
+        content: `Error: ${error.message}. Please try again.` 
+      }])
+    } finally {
+      setIsLoading(false)
+      setInput('')
     }
-    
-    setIsLoading(false)
-    setInput('')
   }
 
   return (
@@ -60,12 +104,17 @@ export default function Home() {
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           disabled={isLoading}
         >
-          Send
+          {isLoading ? 'Sending...' : 'Send'}
         </button>
       </form>
+
+      {/* Debug info */}
+      <div className="mt-4 text-sm text-gray-500">
+        Lambda URL configured: {process.env.NEXT_PUBLIC_LAMBDA_URL ? 'Yes' : 'No'}
+      </div>
     </div>
   )
 }
