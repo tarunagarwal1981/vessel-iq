@@ -1,5 +1,4 @@
 // pages/index.js
-
 import { useEffect, useState } from 'react';
 
 export default function Home() {
@@ -9,11 +8,12 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
+        // Get the API URL from the environment variable
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL, {
           method: 'GET',
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const jsonData = await response.json();
         setData(jsonData);
@@ -29,9 +29,11 @@ export default function Home() {
     <div>
       <h1>VesselIQ Data</h1>
       {error ? (
-        <p>Error: {error}</p>
+        <p style={{ color: 'red' }}>Error: {error}</p>
+      ) : data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
       ) : (
-        data ? <pre>{JSON.stringify(data, null, 2)}</pre> : <p>Loading...</p>
+        <p>Loading...</p>
       )}
     </div>
   );
