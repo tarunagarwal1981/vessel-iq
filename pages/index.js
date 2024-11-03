@@ -1,6 +1,6 @@
 // pages/index.js
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -13,10 +13,10 @@ export default function Home() {
           method: 'GET',
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch data from the API');
+          throw new Error('Failed to fetch data');
         }
-        const data = await response.json();
-        setData(data);
+        const jsonData = await response.json();
+        setData(jsonData);
       } catch (err) {
         setError(err.message);
       }
@@ -25,17 +25,13 @@ export default function Home() {
     fetchData();
   }, []);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   return (
     <div>
       <h1>VesselIQ Data</h1>
-      {data ? (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
+      {error ? (
+        <p>Error: {error}</p>
       ) : (
-        <p>Loading data...</p>
+        data ? <pre>{JSON.stringify(data, null, 2)}</pre> : <p>Loading...</p>
       )}
     </div>
   );
