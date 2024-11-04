@@ -39,9 +39,7 @@ export default function Chat() {
         body: JSON.stringify({ query: input })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
+      if (!response.ok) throw new Error('Failed to get response');
 
       const data = await response.json();
       
