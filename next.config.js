@@ -1,7 +1,17 @@
-// next.config.js
-module.exports = {
-  output: 'export',         // Enables static export
-  images: {
-    unoptimized: true       // Disables Next.js image optimization for static export
-  }
-};
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    output: 'standalone',
+    images: {
+        unoptimized: true
+    },
+    // Add favicon configuration
+    webpack: (config) => {
+        config.module.rules.push({
+            test: /\.(ico|png|svg|jpg|jpeg|gif)$/,
+            type: 'asset/resource'
+        });
+        return config;
+    }
+}
+
+module.exports = nextConfig
