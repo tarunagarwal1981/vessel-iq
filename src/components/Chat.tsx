@@ -6,11 +6,6 @@ import { MessageSquare, Send, Loader } from 'lucide-react';
 type Message = {
   role: 'user' | 'assistant';
   content: string;
-  metadata?: {
-    decision?: string;
-    vessel_name?: string;
-    scores?: Record<string, number>;
-  };
 };
 
 export default function Chat() {
@@ -27,31 +22,41 @@ export default function Chat() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    // Add user message
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
+      console.log('Sending request to:', process.env.NEXT_PUBLIC_LAMBDA_URL);
+      
       const response = await fetch(process.env.NEXT_PUBLIC_LAMBDA_URL!, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ query: input })
       });
+      
+      console.log('Response status:', response.status);
 
-      if (!response.ok) throw new Error('Failed to get response');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
-      
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: data.response,
-        metadata: data.metadata
-      };
+      console.log('Response data:', data);
 
-      setMessages(prev => [...prev, assistantMessage]);
+      // Add assistant message
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.message || 'Received your message'
+      }]);
     } catch (error) {
       console.error('Error:', error);
+      
+      // Add error message
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.'
@@ -81,13 +86,6 @@ export default function Chat() {
               )}
               <div>
                 <p className="text-sm">{message.content}</p>
-                {message.metadata?.scores && (
-                  <div className="mt-2 space-y-1 text-xs">
-                    {Object.entries(message.metadata.scores).map(([key, value]) => (
-                      <p key={key}>{key}: {value}%</p>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           </div>
