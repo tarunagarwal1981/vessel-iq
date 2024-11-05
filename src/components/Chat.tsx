@@ -2,7 +2,6 @@
 "use client";
 import React, { useState } from "react";
 
-// Define the type for the props
 type ChatProps = {
   setResponse: (response: string) => void;
 };
@@ -10,14 +9,12 @@ type ChatProps = {
 export default function Chat({ setResponse }: ChatProps) {
   const [message, setMessage] = useState("");
 
-  // Handle sending message to chatbot and updating response
   const handleSend = async () => {
-    if (!message.trim()) return; // Ignore empty messages
+    if (!message.trim()) return;
     try {
-      // Simulate a response - replace with actual API call if needed
       const chatbotResponse = `You said: ${message}`;
-      setResponse(chatbotResponse); // Update parent component’s response
-      setMessage(""); // Clear input field after sending
+      setResponse(chatbotResponse);
+      setMessage("");
     } catch (error) {
       console.error("Failed to send message:", error);
     }
