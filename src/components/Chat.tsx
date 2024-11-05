@@ -6,6 +6,16 @@ interface ChatProps {
   setResponse: (response: string) => void;
 }
 
+interface LambdaResponse {
+  response: string | null;
+  metadata: {
+    decision: string;
+    vessel_name: string;
+    explanation: string;
+    response_type: string;
+  };
+}
+
 export default function Chat({ setResponse }: ChatProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -22,23 +32,25 @@ export default function Chat({ setResponse }: ChatProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Origin': 'https://vesseliq.netlify.app'
         },
-        mode: 'cors',
-        body: JSON.stringify({ query: message }),
+        body: JSON.stringify({ query: message })
       });
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get response');
       }
 
-      const data = await response.json();
+      const data: LambdaResponse = await response.json();
       
-      if (data.error) {
-        throw new Error(data.error);
+      // Handle the structured response from Lambda
+      if (data.response) {
+        setResponse(data.response);
+        console.log('Metadata:', data.metadata); // For debugging
+      } else {
+        throw new Error('No response data received');
       }
-      
-      setResponse(data.response || "No response from server");
+
       setMessage("");
     } catch (error: any) {
       console.error('Error:', error);
@@ -62,7 +74,7 @@ export default function Chat({ setResponse }: ChatProps) {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyPress}
-        placeholder="Type your message here..."
+        placeholder="Ask about vessel performance, hull condition, or engine troubleshooting..."
         className="w-full p-3 rounded-lg bg-[#132337] text-white border border-[#2a4d7f] 
                    resize-none focus:outline-none focus:border-[#3a5d8f] min-h-[120px]
                    placeholder-gray-400 disabled:opacity-50"
