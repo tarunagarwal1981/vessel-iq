@@ -3,20 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --foreground: #ffffff;
+  --foreground: #f4f4f4;
   --background: #132337;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
   min-height: 100vh;
   margin: 0;
   padding: 0;
 }
 
 html {
-  background: var(--background);
+  background-color: var(--background);
   height: 100%;
 }
 
