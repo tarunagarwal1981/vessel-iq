@@ -105,11 +105,11 @@ export default function Home() {
   const [response, setResponse] = useState<string>("");
 
   return (
-    <div className="flex min-h-screen bg-[#132337]">
-      {/* Response Area (70%) */}
-      <div className="w-[70%] p-8 mr-[30%]">
+    <div className="relative min-h-screen bg-[#132337] flex">
+      {/* Left side - Response Area */}
+      <div className="absolute left-0 top-0 bottom-0 w-[70%] p-8 overflow-y-auto">
         <h2 className="text-2xl font-semibold text-white mb-6">VesselIQ Response</h2>
-        <div className="bg-[#1a2a3d] p-6 rounded-lg text-white shadow-lg min-h-[calc(100vh-120px)]">
+        <div className="bg-[#1a2a3d] p-6 rounded-lg text-white shadow-lg h-[calc(100vh-140px)]">
           {response ? (
             <div className="whitespace-pre-wrap">{response}</div>
           ) : (
@@ -127,8 +127,8 @@ export default function Home() {
         </div>
       </div>
       
-      {/* Chat Area (30%) */}
-      <div className="w-[30%] bg-[#1f4068] p-8 shadow-xl fixed right-0 top-0 h-screen overflow-y-auto">
+      {/* Right side - Chat Area */}
+      <div className="absolute right-0 top-0 bottom-0 w-[30%] bg-[#1f4068] p-8 overflow-y-auto">
         <h2 className="text-2xl font-semibold text-white mb-6">Ask VesselIQ</h2>
         <Chat setResponse={setResponse} />
       </div>
