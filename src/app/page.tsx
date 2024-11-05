@@ -107,7 +107,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen bg-[#132337]">
       {/* Response Area (70%) */}
-      <div className="w-[70%] p-8">
+      <div className="w-[70%] p-8 mr-[30%]">
         <h2 className="text-2xl font-semibold text-white mb-6">VesselIQ Response</h2>
         <div className="bg-[#1a2a3d] p-6 rounded-lg text-white shadow-lg min-h-[calc(100vh-120px)]">
           {response ? (
@@ -128,7 +128,7 @@ export default function Home() {
       </div>
       
       {/* Chat Area (30%) */}
-      <div className="w-[30%] bg-[#1f4068] p-8 shadow-xl fixed right-0 h-screen overflow-y-auto">
+      <div className="w-[30%] bg-[#1f4068] p-8 shadow-xl fixed right-0 top-0 h-screen overflow-y-auto">
         <h2 className="text-2xl font-semibold text-white mb-6">Ask VesselIQ</h2>
         <Chat setResponse={setResponse} />
       </div>
