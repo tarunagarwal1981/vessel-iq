@@ -1,19 +1,41 @@
-/* globals.css */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
-
-:root {
-  --bg-color: #132337;
-  --font-color: #f4f4f4;
-  --border-color: #f4f4f4;
-}
-
+/* Set overall page background and text styling */
 body {
-  background-color: var(--bg-color);
-  color: var(--font-color);
+  background-color: #132337;
+  color: #f4f4f4;
   font-family: 'Nunito', sans-serif;
   font-size: 12px;
 }
 
-* {
-  box-sizing: border-box;
+/* Container to handle the layout */
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Left side - Answers section */
+.answers-section {
+  flex: 0.7;
+  padding: 20px;
+  border-right: 1px solid #f4f4f4;
+  overflow-y: auto;
+}
+
+/* Right side - Chatbot section */
+.chatbot-section {
+  flex: 0.3;
+  padding: 20px;
+  border-left: 1px solid #f4f4f4;
+  background-color: #1a2a3d;
+  box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow-y: auto;
+}
+
+/* Headers styling for sections */
+.answers-section h1,
+.chatbot-section h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f4f4f4;
+  margin-bottom: 15px;
 }
