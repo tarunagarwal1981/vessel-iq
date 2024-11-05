@@ -22,7 +22,9 @@ export default function Chat({ setResponse }: ChatProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Origin': 'https://vesseliq.netlify.app'
         },
+        mode: 'cors',
         body: JSON.stringify({ query: message }),
       });
 
@@ -32,23 +34,25 @@ export default function Chat({ setResponse }: ChatProps) {
 
       const data = await response.json();
       
-      // Set the response from Lambda
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       setResponse(data.response || "No response from server");
-      // Clear the input after successful send
       setMessage("");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      setError("Failed to get response. Please try again.");
+      setError(error.message || "Failed to get response. Please try again.");
       setResponse("Error: Failed to get response from server");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      await handleSend();
     }
   };
 
