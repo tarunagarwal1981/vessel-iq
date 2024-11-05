@@ -14,32 +14,27 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const newMessage = input;
-    setInput('');
-    setIsLoading(true);
-
     try {
       setMessages(prev => [...prev, { 
         type: 'user',
-        content: newMessage
+        content: input
       }]);
+      setInput('');
+      setIsLoading(true);
 
+      // Replace with your actual API endpoint
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: newMessage })
+        body: JSON.stringify({ message: input })
       });
       
       const data = await response.json();
@@ -56,50 +51,54 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#132337]">
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#132337' }}>
+      {/* Message area */}
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((msg, idx) => (
             <div 
               key={idx}
-              className={`p-4 rounded-lg ${
+              className={`rounded-lg p-4 ${
                 msg.type === 'user' 
-                  ? 'bg-blue-600 ml-auto max-w-[80%]' 
-                  : 'bg-gray-800 mr-auto max-w-[80%]'
+                  ? 'ml-auto bg-blue-600 text-white max-w-[80%]' 
+                  : 'mr-auto bg-gray-800 text-white max-w-[80%]'
               }`}
             >
-              <p className="text-white text-sm">{msg.content}</p>
+              <p>{msg.content}</p>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <div className="border-t border-gray-700 bg-[#1a2a3d] py-4">
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 flex items-center gap-2">
-          <button 
-            type="button" 
-            className="p-2 text-gray-400 hover:text-gray-300"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
-          
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message here"
-            className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:outline-none text-sm"
-          />
-          
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className="p-2 text-blue-400 hover:text-blue-300 disabled:opacity-50"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </form>
+      {/* Input area */}
+      <div className="bg-[#1a2a3d] border-t border-gray-700">
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 p-4">
+            <button 
+              type="button"
+              className="p-2 text-gray-400 hover:text-gray-300"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message here"
+              className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
+            />
+
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="p-2 text-blue-400 hover:text-blue-300 disabled:opacity-50"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
