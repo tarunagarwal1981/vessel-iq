@@ -1,73 +1,9 @@
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* src/styles/globals.css */
+@import url("https://fonts.googleapis.com/css?family=Raleway|Ubuntu&display=swap");
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-ul {
-  list-style-type: disc;
-  padding-left: 20px;
-}
-
-input[type="text"] {
-  padding: 12px;
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid #f4f4f4;
-  margin-bottom: 12px;
-  background-color: #1a2a40;
-  color: #f4f4f4;
-  font-size: 14px;
-}
-
-input[type="text"]::placeholder {
-  color: #a0a0a0;
-}
-
-button {
-  padding: 10px 15px;
-  border-radius: 8px;
-  border: none;
-  background-color: #0077cc;
-  color: #f4f4f4;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 14px;
-}
-
-button:hover {
-  background-color: #005fa3;
-}
-
-h2 {
-  font-family: "Nunito", sans-serif;
-}
-
-.fadeIn {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.slideIn {
-  animation: slideIn 0.5s ease-in-out;
-}
-
-ul li {
-  margin: 5px 0;
+body {
+  font-family: "Raleway", sans-serif;
+  background: #e8ebf5;
+  margin: 0;
+  padding: 0;
 }
