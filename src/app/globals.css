@@ -26,13 +26,14 @@ ul {
 }
 
 input[type="text"] {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border-radius: 8px;
   border: 1px solid #f4f4f4;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   background-color: #1a2a40;
   color: #f4f4f4;
+  font-size: 14px;
 }
 
 input[type="text"]::placeholder {
@@ -48,6 +49,7 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  font-size: 14px;
 }
 
 button:hover {
@@ -64,4 +66,8 @@ h2 {
 
 .slideIn {
   animation: slideIn 0.5s ease-in-out;
+}
+
+ul li {
+  margin: 5px 0;
 }
