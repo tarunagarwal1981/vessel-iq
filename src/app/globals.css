@@ -3,32 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 19, 35, 55;
-  --background-end-rgb: 19, 35, 55;
+  --foreground: #ffffff;
+  --background: #132337;
 }
 
-* {
+body {
+  color: var(--foreground);
+  background: var(--background);
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-html,
-body {
-  height: 100vh;
-  overflow: hidden;
+html {
+  background: var(--background);
+  height: 100%;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
+#__next {
+  min-height: 100vh;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
