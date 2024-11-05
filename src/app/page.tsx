@@ -1,6 +1,7 @@
 "use client";
 
 // page.tsx
+// page.tsx
 
 import { useState } from "react";
 import Chat from "@/components/Chat";
@@ -12,7 +13,7 @@ export default function HomePage() {
     container: {
       display: "flex",
       flexDirection: "row" as const,
-      justifyContent: "space-between",
+      justifyContent: "center",
       alignItems: "flex-start",
       height: "100vh",
       width: "100%",
@@ -20,57 +21,52 @@ export default function HomePage() {
       color: "#f4f4f4",
       fontFamily: "Nunito, sans-serif",
       padding: "20px",
-      fontSize: "12px",
+      fontSize: "14px",
       gap: "20px", // Adds spacing between the sections
     },
     responseSection: {
-      width: "65%",
-      padding: "20px",
+      width: "60%",
+      padding: "30px",
       backgroundColor: "#1a2a40",
       borderRadius: "15px",
-      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)", // Softer shadow
+      boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.3)", // Enhanced shadow
       color: "#f4f4f4",
       border: "1px solid #f4f4f4",
       overflowY: "auto" as const,
-      maxHeight: "90vh",
+      maxHeight: "85vh",
       animation: "fadeIn 0.5s ease-in-out",
     },
     chatSection: {
       width: "30%",
-      padding: "20px",
+      padding: "30px",
       backgroundColor: "#1a2a40",
       borderRadius: "15px",
-      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)", // Softer shadow
+      boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.3)", // Enhanced shadow
       color: "#f4f4f4",
       border: "1px solid #f4f4f4",
       display: "flex",
       flexDirection: "column" as const,
       justifyContent: "space-between",
       alignItems: "center",
-      maxHeight: "90vh",
+      maxHeight: "85vh",
       animation: "slideIn 0.5s ease-in-out",
     },
     chatTitle: {
       marginBottom: "10px",
       fontWeight: "bold" as const,
-      fontSize: "18px",
+      fontSize: "20px",
       color: "#f4f4f4",
     },
     responseTitle: {
-      fontSize: "18px",
+      fontSize: "20px",
       fontWeight: "bold" as const,
       color: "#f4f4f4",
       marginBottom: "10px",
     },
     responseText: {
       marginTop: "20px",
-      fontSize: "14px",
+      fontSize: "16px",
       lineHeight: "1.6",
-    },
-    fadeIn: {
-      animationName: "fadeIn",
-      animationDuration: "0.5s",
-      animationTimingFunction: "ease-in-out",
     },
   };
 
