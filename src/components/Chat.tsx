@@ -1,127 +1,100 @@
-'use client';
-
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, Loader } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
-
-type APIResponse = {
-  response: string;
-  metadata: {
-    decision: string;
-    vessel_name: string;
-    explanation: string;
-    response_type: string;
-  };
-};
-
-export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function ChatInterface() {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // Add user message
-    const userMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const newMessage = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_LAMBDA_URL!, {
+      // Add to messages immediately for UI responsiveness
+      setMessages(prev => [...prev, { 
+        type: 'user',
+        content: newMessage
+      }]);
+
+      // Simulate API call - replace with your actual API
+      const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Origin': window.location.origin
-        },
-        credentials: 'omit',
-        body: JSON.stringify({ query: input })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: newMessage })
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: APIResponse = await response.json();
-      console.log('Response data:', data);
-
-      // Add assistant message with the actual response content
-      if (data.response) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.response
-        }]);
-      } else {
-        throw new Error('No response content received');
-      }
+      
+      const data = await response.json();
+      
+      setMessages(prev => [...prev, {
+        type: 'assistant',
+        content: data.response
+      }]);
     } catch (error) {
       console.error('Error:', error);
-      
-      // Add error message
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.'
-      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`flex items-start space-x-2 max-w-[80%] ${
-                message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              } rounded-lg p-3`}
-            >
-              {message.role === 'assistant' && (
-                <MessageSquare className="h-5 w-5 mt-1" />
-              )}
-              <div className="whitespace-pre-wrap">
-                <p className="text-sm">{message.content}</p>
-              </div>
+    <div className="h-screen flex">
+      {/* Left side - Messages/Answers */}
+      <div className="flex-1 bg-[#132337] p-6 overflow-y-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`p-4 rounded-lg ${
+              msg.type === 'user' 
+                ? 'bg-blue-600 ml-auto max-w-[80%]' 
+                : 'bg-gray-800 max-w-[80%]'
+            }`}>
+              <p className="text-white text-sm">{msg.content}</p>
             </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex space-x-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about vessel performance..."
-          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-        >
-          {isLoading ? <Loader className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-        </button>
-      </form>
+      {/* Chat input fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1a2a3d] border-t border-gray-700">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-4 flex items-center gap-2">
+          <button 
+            type="button" 
+            className="p-2 text-gray-400 hover:text-gray-300"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+          
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message here"
+            className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
+          />
+          
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="p-2 text-blue-400 hover:text-blue-300 disabled:opacity-50"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
