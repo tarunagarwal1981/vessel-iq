@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import Chat from "./Chat";
+import Chat from "./components/Chat";
 
 export default function HomePage() {
   const [response, setResponse] = useState("");
