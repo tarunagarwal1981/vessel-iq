@@ -21,42 +21,56 @@ export default function HomePage() {
       fontFamily: "Nunito, sans-serif",
       padding: "20px",
       fontSize: "12px",
+      gap: "20px", // Adds spacing between the sections
     },
     responseSection: {
       width: "65%",
       padding: "20px",
-      backgroundColor: "#132337",
-      borderRadius: "8px",
-      boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+      backgroundColor: "#1a2a40",
+      borderRadius: "15px",
+      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)", // Softer shadow
       color: "#f4f4f4",
       border: "1px solid #f4f4f4",
       overflowY: "auto" as const,
+      maxHeight: "90vh",
+      animation: "fadeIn 0.5s ease-in-out",
     },
     chatSection: {
       width: "30%",
       padding: "20px",
-      backgroundColor: "#1f2d40",
-      borderRadius: "8px",
-      boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+      backgroundColor: "#1a2a40",
+      borderRadius: "15px",
+      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)", // Softer shadow
       color: "#f4f4f4",
       border: "1px solid #f4f4f4",
       display: "flex",
       flexDirection: "column" as const,
       justifyContent: "space-between",
       alignItems: "center",
+      maxHeight: "90vh",
+      animation: "slideIn 0.5s ease-in-out",
     },
     chatTitle: {
       marginBottom: "10px",
       fontWeight: "bold" as const,
       fontSize: "18px",
+      color: "#f4f4f4",
     },
     responseTitle: {
       fontSize: "18px",
       fontWeight: "bold" as const,
+      color: "#f4f4f4",
+      marginBottom: "10px",
     },
     responseText: {
       marginTop: "20px",
       fontSize: "14px",
+      lineHeight: "1.6",
+    },
+    fadeIn: {
+      animationName: "fadeIn",
+      animationDuration: "0.5s",
+      animationTimingFunction: "ease-in-out",
     },
   };
 
