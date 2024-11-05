@@ -1,17 +1,13 @@
-import { ReactNode } from 'react';
-import './globals.css';
+// src/components/Layout.tsx
+import Chat from "./Chat";
 
-export const metadata = {
-  title: 'Chat Application',
-  description: 'Next.js Chat Application',
+const Layout = ({ children }) => {
+  return (
+    <div className="layout">
+      {children}
+      <Chat />
+    </div>
+  );
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <main>{children}</main>
-      </body>
-    </html>
-  );
-}
+export default Layout;
