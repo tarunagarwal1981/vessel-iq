@@ -1,57 +1,46 @@
 // src/app/page.tsx
-'use client';
-import React, { useState } from 'react';
-import Chat from '../components/Chat';
+"use client";
+import { useState } from "react";
+import Chat from "../components/Chat";
 
 export default function HomePage() {
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState<string>("");
 
-  // Define inline styles using CSSProperties for TypeScript compatibility
-  const styles: { [key: string]: React.CSSProperties } = {
+  const styles = {
     container: {
-      display: 'flex',
-      height: '100vh',
-      backgroundColor: '#132337',
-      color: '#f4f4f4',
-      fontFamily: 'Nunito, sans-serif',
-      fontSize: '12px',
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      backgroundColor: "#132337",
+      color: "#f4f4f4",
+      fontFamily: "Nunito, sans-serif",
     },
-    answerSection: {
-      width: '70%',
-      padding: '20px',
-      backgroundColor: '#132337',
-      borderRight: '1px solid #f4f4f4', // Separating the answer and chat sections
+    responseSection: {
+      width: "70%",
+      padding: "2rem",
+      fontSize: "1rem",
+      borderRight: "1px solid #f4f4f4",
+      overflowY: "auto" as "auto",
     },
     chatSection: {
-      width: '30%',
-      padding: '20px',
-      display: 'flex',
-      flexDirection: 'column' as const, // Ensure compatibility with CSSProperties
-      justifyContent: 'space-between',
-      backgroundColor: '#132337',
-      boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)',
-    },
-    chatHeader: {
-      fontSize: '16px',
-      fontWeight: 'bold',
-      marginBottom: '10px',
-    },
-    responseText: {
-      whiteSpace: 'pre-wrap', // Preserve formatting of response text
+      width: "30%",
+      padding: "2rem",
+      display: "flex",
+      flexDirection: "column" as "column",
+      justifyContent: "center",
+      backgroundColor: "#1f4068",
+      boxShadow: "3px 3px 10px rgba(0, 0, 0, 0.3)",
     },
   };
 
   return (
     <div style={styles.container}>
-      {/* Left side for displaying answers */}
-      <div style={styles.answerSection}>
-        <h2 style={styles.chatHeader}>Answers</h2>
-        <p style={styles.responseText}>{response}</p>
+      <div style={styles.responseSection}>
+        <h2>Chatbot Response</h2>
+        <p>{response}</p>
       </div>
-
-      {/* Right side for chatbot input */}
       <div style={styles.chatSection}>
-        <h2 style={styles.chatHeader}>Chatbot</h2>
+        <h2>Chatbot</h2>
         <Chat setResponse={setResponse} />
       </div>
     </div>
