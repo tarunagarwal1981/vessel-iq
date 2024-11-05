@@ -1,8 +1,8 @@
 import Chat from '@/components/Chat';
 
-export default function ChatPage() {
+export default function HomePage() {
   return (
-    <main className="h-screen bg-[#132337]">
+    <main>
       <Chat />
     </main>
   );
