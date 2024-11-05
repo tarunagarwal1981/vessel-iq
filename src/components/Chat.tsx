@@ -8,6 +8,16 @@ type Message = {
   content: string;
 };
 
+type APIResponse = {
+  response: string;
+  metadata: {
+    decision: string;
+    vessel_name: string;
+    explanation: string;
+    response_type: string;
+  };
+};
+
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -29,30 +39,32 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      console.log('Sending request to:', process.env.NEXT_PUBLIC_LAMBDA_URL);
-      
       const response = await fetch(process.env.NEXT_PUBLIC_LAMBDA_URL!, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Origin': window.location.origin
         },
+        credentials: 'omit',
         body: JSON.stringify({ query: input })
       });
-      
-      console.log('Response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: APIResponse = await response.json();
       console.log('Response data:', data);
 
-      // Add assistant message
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: data.message || 'Received your message'
-      }]);
+      // Add assistant message with the actual response content
+      if (data.response) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.response
+        }]);
+      } else {
+        throw new Error('No response content received');
+      }
     } catch (error) {
       console.error('Error:', error);
       
@@ -84,7 +96,7 @@ export default function Chat() {
               {message.role === 'assistant' && (
                 <MessageSquare className="h-5 w-5 mt-1" />
               )}
-              <div>
+              <div className="whitespace-pre-wrap">
                 <p className="text-sm">{message.content}</p>
               </div>
             </div>
