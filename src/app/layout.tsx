@@ -1,5 +1,3 @@
-// src/app/layout.tsx
-"use client";  // Required for using hooks or other client-side components
 
 // app/layout.tsx
 import './globals.css'
