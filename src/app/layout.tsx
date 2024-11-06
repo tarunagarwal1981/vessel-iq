@@ -3,7 +3,7 @@
 "use client"; // This tells Next.js to treat this file as a Client Component
 
 import React, { useState } from "react";
-import "../globals.css";
+import "./globals.css";
 import Chat from "../components/Chat";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
