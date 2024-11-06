@@ -1,34 +1,7 @@
-// src/app/globals.css
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background-primary: #132337;
-  --text-primary: #f4f4f4;
-}
-
 body {
-  background-color: var(--background-primary);
   font-family: 'Nunito', sans-serif;
-  color: var(--text-primary);
-}
-
-.chat-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-container::-webkit-scrollbar-track {
-  background: #1a324d;
-}
-
-.chat-container::-webkit-scrollbar-thumb {
-  background: #2a4a6d;
-  border-radius: 3px;
-}
-
-.chat-container::-webkit-scrollbar-thumb:hover {
-  background: #3a5a7d;
+  margin: 0;
+  padding: 0;
+  background-color: #132337;
+  color: #f4f4f4;
 }
