@@ -46,7 +46,7 @@ const Chat = () => {
       
       {/* Left Panel for Brand Identity */}
       <div style={{ width: '40%', background: 'linear-gradient(to bottom, #2c3e50, #34495e)', color: '#f4f4f4', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <img src="/logo.png" alt="VesselIQ Logo" style={{ width: '60px', height: '60px', marginBottom: '20px' }} />
+        <img src="./logo.png" alt="VesselIQ Logo" style={{ width: '60px', height: '60px', marginBottom: '20px' }} />
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>VesselIQ</h1>
         <p style={{ fontSize: '16px', textAlign: 'center', marginBottom: '20px' }}>Optimizing Maritime Performance</p>
         <p style={{ fontSize: '14px', textAlign: 'center', maxWidth: '80%' }}>Get actionable insights for vessel performance. Ask questions, monitor metrics, and enhance operations seamlessly.</p>
