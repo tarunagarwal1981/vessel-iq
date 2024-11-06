@@ -1,18 +1,21 @@
 // src/app/layout.tsx
 
-"use client"; // Marks this file as a client component, necessary for using hooks like useState.
+"use client"; // Marks this file as a client component.
 
-import React from "react";
-import "./globals.css"; // Ensure the path is correct for your CSS file.
+import React, { useState } from "react";
+import "./globals.css"; // Ensure the path is correct.
 import Chat from "../components/Chat"; // Correct path to Chat component
 
-// Define the Layout component that includes the Chat component and any child components.
 export default function Layout({ children }: { children: React.ReactNode }) {
+    // Define a closeChat function to satisfy ChatProps requirements.
+    const closeChat = () => {
+        console.log("Chat closed");
+    };
+
     return (
         <div className="app-layout">
-            {/* Chat component */}
-            <Chat />
-            {/* Render children passed to this layout */}
+            {/* Pass closeChat prop to Chat component */}
+            <Chat closeChat={closeChat} />
             <main>{children}</main>
         </div>
     );
