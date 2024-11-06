@@ -13,7 +13,9 @@ const Chat = () => {
         body: JSON.stringify({ query }),
       });
       const data = await response.json();
-      setMessages((prev) => [...prev, { text: data.answer, sender: 'bot' }]);
+      if (data.answer) {
+        setMessages((prev) => [...prev, { text: data.answer, sender: 'bot' }]);
+      }
     } catch (error) {
       console.error('Error fetching response:', error);
       setMessages((prev) => [...prev, { text: 'Error fetching response. Please try again.', sender: 'bot' }]);
@@ -30,8 +32,8 @@ const Chat = () => {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '500px', padding: '20px', borderRadius: '8px', backgroundColor: '#1c3b57' }}>
-      <div style={{ height: '400px', overflowY: 'scroll', padding: '10px', borderRadius: '4px', backgroundColor: '#132337' }}>
+    <div style={{ width: '100%', height: '100vh', padding: '20px', borderRadius: '8px', backgroundColor: '#1c3b57' }}>
+      <div style={{ height: '80%', overflowY: 'scroll', padding: '10px', borderRadius: '4px', backgroundColor: '#132337' }}>
         {messages.map((msg, index) => (
           <div
             key={index}
