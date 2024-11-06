@@ -1,21 +1,50 @@
-/* src/app/globals.css */
+// app/globals.css
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #e8ebf5;
+  background-color: #132337;
+  font-family: 'Nunito', sans-serif;
+  color: #f4f4f4;
 }
 
-h1, h2, p, ul {
-  color: #333;
+.chat-container::-webkit-scrollbar {
+  width: 6px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
+.chat-container::-webkit-scrollbar-track {
+  background: #1a324d;
 }
 
-li {
-  margin-bottom: 0.5rem;
+.chat-container::-webkit-scrollbar-thumb {
+  background: #2a4a6d;
+  border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background: #3a5a7d;
+}
+
+// app/layout.tsx
+import './globals.css'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'VesselIQ Chat',
+  description: 'Smart vessel insights chatbot',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
 }
