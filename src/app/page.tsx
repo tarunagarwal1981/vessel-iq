@@ -1,17 +1,10 @@
-// src/app/page.tsx
+// app/page.tsx
+import Chat from '@/components/Chat'
 
-import React from "react";
-import Layout from "./layout";
-
-const Page: React.FC = () => {
+export default function Home() {
   return (
-    <Layout>
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h2>Welcome to VesselIQ</h2>
-        <p>Click the "Message Us" button to chat with us.</p>
-      </div>
-    </Layout>
-  );
-};
-
-export default Page;
+    <main className="min-h-screen p-4 md:p-8">
+      <Chat />
+    </main>
+  )
+}
