@@ -1,10 +1,11 @@
-// app/page.tsx
-import Chat from '@/components/Chat'
+'use client';
+import { useState } from 'react';
+import Chat from '../components/Chat';
 
-export default function Home() {
+export default function ChatPage() {
   return (
-    <main className="min-h-screen p-4 md:p-8">
+    <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <Chat />
     </main>
-  )
+  );
 }
