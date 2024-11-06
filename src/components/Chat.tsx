@@ -8,7 +8,6 @@ const Chat = () => {
 
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
-    console.log("Lambda URL:", lambdaUrl); // Debugging the URL
     try {
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
@@ -21,9 +20,7 @@ const Chat = () => {
       }
 
       const data = await response.json();
-      console.log("API Response Data:", data); // Debugging the response data
 
-      // Access the specific field `data.response` based on your structure
       if (data.response) {
         setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
       } else {
@@ -45,42 +42,53 @@ const Chat = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh', padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#132337' }}>
-      <div style={{ width: '60%', backgroundColor: '#1c3b57', padding: '20px', borderRadius: '8px' }}>
-        <div style={{ height: '70vh', overflowY: 'auto', padding: '10px', borderRadius: '4px', backgroundColor: '#132337' }}>
+    <div style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#132337' }}>
+      <div style={{ width: '60%', maxWidth: '800px', backgroundColor: '#1c3b57', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', overflow: 'hidden' }}>
+        
+        {/* Header */}
+        <div style={{ backgroundColor: '#1e4c77', padding: '20px', textAlign: 'center', color: '#f4f4f4', fontSize: '24px', fontWeight: 'bold' }}>
+          VesselIQ - Your Maritime Performance Assistant
+        </div>
+
+        {/* Chat Messages */}
+        <div style={{ height: '60vh', padding: '20px', overflowY: 'auto', backgroundColor: '#132337' }}>
           {messages.map((msg, index) => (
             <div
               key={index}
               style={{
                 textAlign: msg.sender === 'bot' ? 'left' : 'right',
-                padding: '8px 12px',
-                margin: '6px 0',
-                borderRadius: '12px',
-                backgroundColor: msg.sender === 'bot' ? '#1e4c77' : '#22586e',
+                padding: '10px 15px',
+                margin: '10px 0',
+                borderRadius: '16px',
+                backgroundColor: msg.sender === 'bot' ? '#1e4c77' : '#4a90e2',
                 color: '#f4f4f4',
+                maxWidth: '80%',
+                alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
               }}
             >
               {msg.text}
             </div>
           ))}
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', marginTop: '10px' }}>
+
+        {/* Input Area */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', borderTop: '1px solid #4a90e2', backgroundColor: '#1c3b57' }}>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             style={{
               flex: 1,
-              padding: '10px',
-              borderRadius: '4px 0 0 4px',
-              border: '1px solid #4a90e2',
+              padding: '15px',
+              border: 'none',
               outline: 'none',
               backgroundColor: '#132337',
               color: '#f4f4f4',
+              borderRadius: '0 0 0 12px',
             }}
             placeholder="Type your message..."
           />
-          <button type="submit" style={{ padding: '10px', borderRadius: '0 4px 4px 0', backgroundColor: '#4a90e2', color: '#f4f4f4', border: 'none', cursor: 'pointer' }}>
+          <button type="submit" style={{ padding: '15px 20px', backgroundColor: '#4a90e2', color: '#f4f4f4', border: 'none', borderRadius: '0 0 12px 0', cursor: 'pointer' }}>
             Send
           </button>
         </form>
