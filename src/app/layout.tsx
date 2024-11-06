@@ -1,20 +1,20 @@
-// src/app/layout.tsx
-import './globals.css'
-import type { Metadata } from 'next'
+import { Nunito } from 'next/font/google';
 
-export const metadata: Metadata = {
-  title: 'VesselIQ Chat',
-  description: 'Smart vessel insights chatbot',
-}
+const nunito = Nunito({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+});
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export const metadata = {
+  title: 'Chatbot',
+};
+
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={nunito.className} style={{ backgroundColor: '#132337', color: '#f4f4f4' }}>
+        {children}
+      </body>
     </html>
-  )
+  );
 }
