@@ -42,17 +42,21 @@ const Chat = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#132337' }}>
-      <div style={{ width: '60%', maxWidth: '800px', borderRadius: '24px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.37)', overflow: 'hidden', backdropFilter: 'blur(10px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
-        
-        {/* Frosted Glass Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backgroundColor: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(10px)', color: '#f4f4f4', fontSize: '20px', fontWeight: 'bold', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
-          <img src="/logo.png" alt="VesselIQ Logo" style={{ width: '30px', height: '30px', marginRight: '10px' }} />
-          VesselIQ - Your Maritime Performance Assistant
-        </div>
+    <div style={{ display: 'flex', width: '100%', height: '100vh' }}>
+      
+      {/* Left Panel for Brand Identity */}
+      <div style={{ width: '40%', background: 'linear-gradient(to bottom, #2c3e50, #34495e)', color: '#f4f4f4', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <img src="/logo.png" alt="VesselIQ Logo" style={{ width: '60px', height: '60px', marginBottom: '20px' }} />
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>VesselIQ</h1>
+        <p style={{ fontSize: '16px', textAlign: 'center', marginBottom: '20px' }}>Optimizing Maritime Performance</p>
+        <p style={{ fontSize: '14px', textAlign: 'center', maxWidth: '80%' }}>Get actionable insights for vessel performance. Ask questions, monitor metrics, and enhance operations seamlessly.</p>
+      </div>
 
-        {/* Chat Messages */}
-        <div style={{ height: '60vh', padding: '20px', overflowY: 'auto' }}>
+      {/* Right Panel for Chat Interface */}
+      <div style={{ width: '60%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
+        
+        {/* Chat Container */}
+        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           {messages.map((msg, index) => (
             <div
               key={index}
@@ -75,7 +79,7 @@ const Chat = () => {
         </div>
 
         {/* Input Area */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', padding: '15px', borderTop: '1px solid rgba(255, 255, 255, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', padding: '15px', backgroundColor: '#1c3b57', borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
           <input
             type="text"
             value={input}
@@ -86,14 +90,13 @@ const Chat = () => {
               borderRadius: '20px',
               border: 'none',
               outline: 'none',
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               color: '#f4f4f4',
-              backdropFilter: 'blur(5px)',
               marginRight: '10px',
             }}
             placeholder="Type your message..."
           />
-          <button type="submit" style={{ padding: '12px 20px', borderRadius: '20px', backgroundColor: '#4a90e2', color: '#f4f4f4', border: 'none', cursor: 'pointer', transition: 'background-color 0.3s ease' }}>
+          <button type="submit" style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#4a90e2', color: '#f4f4f4', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             ➤
           </button>
         </form>
