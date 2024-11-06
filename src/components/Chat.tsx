@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 const Chat = () => {
@@ -6,15 +8,25 @@ const Chat = () => {
 
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
+    console.log("Lambda URL:", lambdaUrl); // Debugging URL
     try {
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+
       const data = await response.json();
+      console.log("API Response Data:", data); // Debugging response data
+
       if (data.answer) {
         setMessages((prev) => [...prev, { text: data.answer, sender: 'bot' }]);
+      } else {
+        setMessages((prev) => [...prev, { text: 'No answer provided by bot.', sender: 'bot' }]);
       }
     } catch (error) {
       console.error('Error fetching response:', error);
