@@ -42,8 +42,8 @@ const Chat = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#132337' }}>
-      <div style={{ width: '60%', maxWidth: '800px', backgroundColor: '#1c3b57', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#132337' }}>
+      <div style={{ width: '70%', maxWidth: '1000px', backgroundColor: '#1c3b57', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', overflow: 'hidden' }}>
         
         {/* Header */}
         <div style={{ backgroundColor: '#1e4c77', padding: '20px', textAlign: 'center', color: '#f4f4f4', fontSize: '24px', fontWeight: 'bold' }}>
