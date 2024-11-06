@@ -1,9 +1,7 @@
-
-// app/layout.tsx
+// src/app/layout.tsx
 import './globals.css'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'VesselIQ Chat',
   description: 'Smart vessel insights chatbot',
 }
