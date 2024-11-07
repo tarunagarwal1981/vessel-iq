@@ -2,13 +2,20 @@
 
 import { useState } from 'react';
 
+// Define a Message type that allows either text or image
+type Message = {
+  text?: string;
+  image?: string;
+  sender: 'user' | 'bot';
+};
+
 const Chat = () => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { text: 'Welcome! How can I assist you today?', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
 
-  const fetchResponse = async (query: string) => { // Explicitly specifying the type as 'string' for query
+  const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       const response = await fetch(lambdaUrl || '', {
@@ -24,7 +31,7 @@ const Chat = () => {
       const data = await response.json();
 
       if (data.response) {
-        const newMessages = [{ text: data.response.message, sender: 'bot' }];
+        const newMessages: Message[] = [{ text: data.response.message, sender: 'bot' }];
 
         // Check if plot and metadata exist
         if (data.response.plot) {
