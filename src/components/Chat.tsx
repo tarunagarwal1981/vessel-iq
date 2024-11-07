@@ -2,17 +2,13 @@
 
 import { useState } from 'react';
 
-type Message = {
-  text?: string;
-  sender: string;
-  image?: string;
-};
-
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([{ text: 'Welcome! How can I assist you today?', sender: 'bot' }]);
+  const [messages, setMessages] = useState([
+    { text: 'Welcome! How can I assist you today?', sender: 'bot' },
+  ]);
   const [input, setInput] = useState('');
 
-  const fetchResponse = async (query: string) => {
+  const fetchResponse = async (query) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       const response = await fetch(lambdaUrl || '', {
@@ -27,38 +23,41 @@ const Chat = () => {
 
       const data = await response.json();
 
-      console.log("Lambda Response Data:", data);
+      if (data.response) {
+        const newMessages = [{ text: data.response.message, sender: 'bot' }];
 
-      if (typeof data.response === 'string') {
-        setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
-      } else if (typeof data.response === 'object') {
-        const { message, avgPowerLoss, hullCondition, plot } = data.response;
-
-        const newMessages: Message[] = [{ text: message || 'Hull performance data received', sender: 'bot' }];
-
-        if (avgPowerLoss !== undefined) {
-          newMessages.push({ text: `Average Power Loss: ${avgPowerLoss.toFixed(2)}%`, sender: 'bot' });
+        // Check if plot and metadata exist
+        if (data.response.plot) {
+          newMessages.push({
+            image: `data:image/png;base64,${data.response.plot}`,
+            sender: 'bot',
+          });
         }
 
-        if (hullCondition) {
-          newMessages.push({ text: `Hull Condition: ${hullCondition}`, sender: 'bot' });
-        }
-
-        if (plot) {
-          newMessages.push({ image: `data:image/png;base64,${plot}`, sender: 'bot' });
+        if (data.response.metadata) {
+          newMessages.push({
+            text: `X Axis: ${data.response.metadata.xAxisLabel}, Y Axis: ${data.response.metadata.yAxisLabel}`,
+            sender: 'bot',
+          });
         }
 
         setMessages((prev) => [...prev, ...newMessages]);
       } else {
-        setMessages((prev) => [...prev, { text: 'No answer provided by bot.', sender: 'bot' }]);
+        setMessages((prev) => [
+          ...prev,
+          { text: 'No answer provided by bot.', sender: 'bot' },
+        ]);
       }
     } catch (error) {
       console.error('Error fetching response:', error);
-      setMessages((prev) => [...prev, { text: 'Error fetching response. Please try again.', sender: 'bot' }]);
+      setMessages((prev) => [
+        ...prev,
+        { text: 'Error fetching response. Please try again.', sender: 'bot' },
+      ]);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (input.trim()) {
       setMessages((prev) => [...prev, { text: input, sender: 'user' }]);
@@ -69,18 +68,36 @@ const Chat = () => {
 
   return (
     <div style={{ display: 'flex', width: '100%', height: '100vh' }}>
-      
       {/* Left Panel for Brand Identity */}
-      <div style={{ width: '30%', background: 'linear-gradient(to bottom, #2c3e50, #34495e)', color: '#f4f4f4', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <img src="/logo.png" alt="VesselIQ Logo" style={{ width: '200px', height: '80px', marginBottom: '20px' }} />
+      <div
+        style={{
+          width: '30%',
+          background: 'linear-gradient(to bottom, #2c3e50, #34495e)',
+          color: '#f4f4f4',
+          padding: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <img
+          src="/logo.png"
+          alt="VesselIQ Logo"
+          style={{ width: '200px', height: '80px', marginBottom: '20px' }}
+        />
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>VesselIQ</h1>
-        <p style={{ fontSize: '16px', textAlign: 'center', marginBottom: '20px' }}>Optimizing Maritime Performance</p>
-        <p style={{ fontSize: '14px', textAlign: 'center', maxWidth: '80%' }}>Get actionable insights for vessel performance. Ask questions, monitor metrics, and enhance operations seamlessly.</p>
+        <p style={{ fontSize: '16px', textAlign: 'center', marginBottom: '20px' }}>
+          Optimizing Maritime Performance
+        </p>
+        <p style={{ fontSize: '14px', textAlign: 'center', maxWidth: '80%' }}>
+          Get actionable insights for vessel performance. Ask questions, monitor metrics, and enhance
+          operations seamlessly.
+        </p>
       </div>
 
       {/* Right Panel for Chat Interface */}
       <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
-        
         {/* Chat Container */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           {messages.map((msg, index) => (
@@ -99,8 +116,15 @@ const Chat = () => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {msg.text && <p>{msg.text}</p>}
-              {msg.image && <img src={msg.image} alt="Hull Performance Plot" style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }} />}
+              {msg.image ? (
+                <img
+                  src={msg.image}
+                  alt="Chart"
+                  style={{ width: '100%', borderRadius: '10px' }}
+                />
+              ) : (
+                msg.text
+              )}
             </div>
           ))}
         </div>
