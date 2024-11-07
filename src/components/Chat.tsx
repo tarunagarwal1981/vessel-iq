@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-// Define a Message type that allows either text or image
 type Message = {
   text?: string;
   image?: string;
@@ -18,6 +17,8 @@ const Chat = () => {
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
+      console.log('Sending query:', query);  // Debug log
+      
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,12 +30,12 @@ const Chat = () => {
       }
 
       const data = await response.json();
-      console.log('Response from Lambda:', data); // Debug log
+      console.log('Received data:', data);  // Debug log
 
       if (data.response) {
         const newMessages: Message[] = [];
 
-        // Add text response
+        // Add text message
         if (data.response.message) {
           newMessages.push({
             text: data.response.message,
@@ -42,55 +43,48 @@ const Chat = () => {
           });
         }
 
-        // Add plot if exists
-        if (data.response.plot) {
-          console.log('Plot data received, length:', data.response.plot.length); // Debug log
+        // Check for plot data
+        if (data.response && data.response.plot) {
+          console.log('Plot data found:', !!data.response.plot); // Debug log
+          console.log('Plot data length:', data.response.plot.length); // Debug log
           
-          // Validate base64 data
-          const isValidBase64 = (str: string) => {
-            try {
-              return btoa(atob(str)) === str;
-            } catch (err) {
-              return false;
-            }
-          };
+          newMessages.push({
+            image: `data:image/png;base64,${data.response.plot}`,
+            sender: 'bot'
+          });
 
-          if (isValidBase64(data.response.plot)) {
+          // Add metadata as separate message if available
+          if (data.response.metadata) {
             newMessages.push({
-              image: `data:image/png;base64,${data.response.plot}`,
-              text: data.response.metadata ? 
-                `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}` : 
-                undefined,
+              text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
               sender: 'bot'
             });
-            console.log('Plot message added to chat'); // Debug log
-          } else {
-            console.error('Invalid base64 data received for plot');
           }
         } else {
-          console.log('No plot data in response'); // Debug log
+          console.log('No plot data in response');  // Debug log
         }
 
-        setMessages((prev) => [...prev, ...newMessages]);
+        console.log('New messages to add:', newMessages);  // Debug log
+        setMessages(prev => [...prev, ...newMessages]);
       } else {
-        setMessages((prev) => [
+        setMessages(prev => [
           ...prev,
           { text: 'No answer provided by bot.', sender: 'bot' },
         ]);
       }
     } catch (error) {
       console.error('Error fetching response:', error);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         { text: 'Error fetching response. Please try again.', sender: 'bot' },
       ]);
     }
-};
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      setMessages((prev) => [...prev, { text: input, sender: 'user' }]);
+      setMessages(prev => [...prev, { text: input, sender: 'user' }]);
       fetchResponse(input);
       setInput('');
     }
@@ -98,7 +92,7 @@ const Chat = () => {
 
   return (
     <div style={{ display: 'flex', width: '100%', height: '100vh' }}>
-      {/* Left Panel for Brand Identity */}
+      {/* Left Panel */}
       <div
         style={{
           width: '30%',
@@ -126,7 +120,7 @@ const Chat = () => {
         </p>
       </div>
 
-      {/* Right Panel for Chat Interface */}
+      {/* Right Panel */}
       <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
         {/* Chat Container */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
@@ -135,8 +129,8 @@ const Chat = () => {
               key={index}
               style={{
                 alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
-                maxWidth: msg.image ? '90%' : '80%',
-                padding: msg.image ? '16px' : '12px 18px',
+                maxWidth: msg.image ? '100%' : '80%',
+                padding: '12px 18px',
                 margin: '10px 0',
                 borderRadius: '20px',
                 backgroundColor: msg.sender === 'bot' 
@@ -155,26 +149,20 @@ const Chat = () => {
                     alt="Chart"
                     style={{ 
                       width: '100%',
-                      height: 'auto',
-                      minHeight: '400px',
+                      maxHeight: '500px',
+                      objectFit: 'contain',
                       borderRadius: '10px',
-                      marginBottom: msg.text ? '8px' : '0'
+                      marginBottom: '8px'
+                    }}
+                    onError={(e) => {
+                      console.error('Image failed to load:', e);
+                      // Set a fallback or error message
+                      (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                  {msg.text && (
-                    <div style={{ 
-                      marginTop: '8px',
-                      fontSize: '14px',
-                      color: '#f4f4f4',
-                      textAlign: 'center',
-                      opacity: 0.9 
-                    }}>
-                      {msg.text}
-                    </div>
-                  )}
                 </div>
               ) : (
-                msg.text
+                <div>{msg.text}</div>
               )}
             </div>
           ))}
