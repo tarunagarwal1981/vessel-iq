@@ -31,19 +31,23 @@ const Chat = () => {
       const data = await response.json();
 
       if (data.response) {
-        const newMessages: Message[] = [{ text: data.response.message, sender: 'bot' }];
+        const newMessages: Message[] = [];
 
-        // Check if plot and metadata exist
-        if (data.response.plot) {
-          newMessages.push({
-            image: `data:image/png;base64,${data.response.plot}`,
-            sender: 'bot',
+        // Add text response if exists
+        if (data.response.message) {
+          newMessages.push({ 
+            text: data.response.message, 
+            sender: 'bot' 
           });
         }
 
-        if (data.response.metadata) {
+        // Add plot if exists, with better handling of metadata
+        if (data.response.plot) {
           newMessages.push({
-            text: `X Axis: ${data.response.metadata.xAxisLabel}, Y Axis: ${data.response.metadata.yAxisLabel}`,
+            image: `data:image/png;base64,${data.response.plot}`,
+            text: data.response.metadata ? 
+              `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}` : 
+              undefined,
             sender: 'bot',
           });
         }
@@ -112,11 +116,13 @@ const Chat = () => {
               key={index}
               style={{
                 alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
-                maxWidth: '80%',
-                padding: '12px 18px',
+                maxWidth: msg.image ? '90%' : '80%',
+                padding: msg.image ? '16px' : '12px 18px',
                 margin: '10px 0',
                 borderRadius: '20px',
-                backgroundColor: msg.sender === 'bot' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(74, 144, 226, 0.2)',
+                backgroundColor: msg.sender === 'bot' 
+                  ? 'rgba(255, 255, 255, 0.2)' 
+                  : 'rgba(74, 144, 226, 0.2)',
                 color: '#f4f4f4',
                 backdropFilter: 'blur(5px)',
                 boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
@@ -124,11 +130,30 @@ const Chat = () => {
               }}
             >
               {msg.image ? (
-                <img
-                  src={msg.image}
-                  alt="Chart"
-                  style={{ width: '100%', borderRadius: '10px' }}
-                />
+                <div style={{ width: '100%' }}>
+                  <img
+                    src={msg.image}
+                    alt="Chart"
+                    style={{ 
+                      width: '100%',
+                      height: 'auto',
+                      minHeight: '400px',
+                      borderRadius: '10px',
+                      marginBottom: msg.text ? '8px' : '0'
+                    }}
+                  />
+                  {msg.text && (
+                    <div style={{ 
+                      marginTop: '8px',
+                      fontSize: '14px',
+                      color: '#f4f4f4',
+                      textAlign: 'center',
+                      opacity: 0.9 
+                    }}>
+                      {msg.text}
+                    </div>
+                  )}
+                </div>
               ) : (
                 msg.text
               )}
@@ -137,7 +162,16 @@ const Chat = () => {
         </div>
 
         {/* Input Area */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', padding: '15px', backgroundColor: '#1c3b57', borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
+        <form 
+          onSubmit={handleSubmit} 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            padding: '15px', 
+            backgroundColor: '#1c3b57', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.2)' 
+          }}
+        >
           <input
             type="text"
             value={input}
@@ -154,7 +188,21 @@ const Chat = () => {
             }}
             placeholder="Type your message..."
           />
-          <button type="submit" style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#4a90e2', color: '#f4f4f4', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <button 
+            type="submit" 
+            style={{ 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '50%', 
+              backgroundColor: '#4a90e2', 
+              color: '#f4f4f4', 
+              border: 'none', 
+              cursor: 'pointer', 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center' 
+            }}
+          >
             ➤
           </button>
         </form>
