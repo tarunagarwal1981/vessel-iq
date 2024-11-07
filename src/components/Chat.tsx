@@ -8,7 +8,7 @@ const Chat = () => {
   ]);
   const [input, setInput] = useState('');
 
-  const fetchResponse = async (query) => {
+  const fetchResponse = async (query: string) => { // Explicitly specifying the type as 'string' for query
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       const response = await fetch(lambdaUrl || '', {
@@ -57,7 +57,7 @@ const Chat = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
       setMessages((prev) => [...prev, { text: input, sender: 'user' }]);
