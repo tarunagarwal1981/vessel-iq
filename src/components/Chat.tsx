@@ -21,24 +21,31 @@ const Chat = () => {
 
       const data = await response.json();
 
-      // Debugging: Log the complete data response to understand its structure
       console.log("Lambda Response Data:", data);
 
-      // Check if data.response is a string or an object and handle accordingly
       if (typeof data.response === 'string') {
         setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
-      } else if (typeof data.response === 'object' && data.response.message) {
-        // If data.response has nested properties, use message or other relevant keys
-        setMessages((prev) => [...prev, { text: data.response.message, sender: 'bot' }]);
+      } else if (typeof data.response === 'object') {
+        // Extracting additional data for hull performance if available
+        const { message, avgPowerLoss, hullCondition, plot } = data.response;
 
-        // Optional: Log details if other keys like avgPowerLoss, hullCondition exist
-        if (data.response.avgPowerLoss || data.response.hullCondition || data.response.plot) {
-          console.log("Hull Performance Data:", {
-            avgPowerLoss: data.response.avgPowerLoss,
-            hullCondition: data.response.hullCondition,
-            plot: data.response.plot,
-          });
+        // Create message array to add to the chat
+        const newMessages = [{ text: message || 'Hull performance data received', sender: 'bot' }];
+
+        if (avgPowerLoss !== undefined) {
+          newMessages.push({ text: `Average Power Loss: ${avgPowerLoss.toFixed(2)}%`, sender: 'bot' });
         }
+
+        if (hullCondition) {
+          newMessages.push({ text: `Hull Condition: ${hullCondition}`, sender: 'bot' });
+        }
+
+        // Add image if plot is provided
+        if (plot) {
+          newMessages.push({ image: `data:image/png;base64,${plot}`, sender: 'bot' });
+        }
+
+        setMessages((prev) => [...prev, ...newMessages]);
       } else {
         setMessages((prev) => [...prev, { text: 'No answer provided by bot.', sender: 'bot' }]);
       }
@@ -89,7 +96,9 @@ const Chat = () => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {msg.text}
+              {/* Check if message is text or image */}
+              {msg.text && <p>{msg.text}</p>}
+              {msg.image && <img src={msg.image} alt="Hull Performance Plot" style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }} />}
             </div>
           ))}
         </div>
