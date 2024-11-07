@@ -29,27 +29,46 @@ const Chat = () => {
       }
 
       const data = await response.json();
+      console.log('Response from Lambda:', data); // Debug log
 
       if (data.response) {
         const newMessages: Message[] = [];
 
-        // Add text response if exists
+        // Add text response
         if (data.response.message) {
-          newMessages.push({ 
-            text: data.response.message, 
-            sender: 'bot' 
+          newMessages.push({
+            text: data.response.message,
+            sender: 'bot'
           });
         }
 
-        // Add plot if exists, with better handling of metadata
+        // Add plot if exists
         if (data.response.plot) {
-          newMessages.push({
-            image: `data:image/png;base64,${data.response.plot}`,
-            text: data.response.metadata ? 
-              `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}` : 
-              undefined,
-            sender: 'bot',
-          });
+          console.log('Plot data received, length:', data.response.plot.length); // Debug log
+          
+          // Validate base64 data
+          const isValidBase64 = (str: string) => {
+            try {
+              return btoa(atob(str)) === str;
+            } catch (err) {
+              return false;
+            }
+          };
+
+          if (isValidBase64(data.response.plot)) {
+            newMessages.push({
+              image: `data:image/png;base64,${data.response.plot}`,
+              text: data.response.metadata ? 
+                `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}` : 
+                undefined,
+              sender: 'bot'
+            });
+            console.log('Plot message added to chat'); // Debug log
+          } else {
+            console.error('Invalid base64 data received for plot');
+          }
+        } else {
+          console.log('No plot data in response'); // Debug log
         }
 
         setMessages((prev) => [...prev, ...newMessages]);
@@ -66,7 +85,7 @@ const Chat = () => {
         { text: 'Error fetching response. Please try again.', sender: 'bot' },
       ]);
     }
-  };
+};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
