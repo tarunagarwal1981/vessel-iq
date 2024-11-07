@@ -21,11 +21,24 @@ const Chat = () => {
 
       const data = await response.json();
 
-      // Debugging line to inspect the structure of the data received from Lambda
+      // Debugging: Log the complete data response to understand its structure
       console.log("Lambda Response Data:", data);
 
-      if (data.response) {
+      // Check if data.response is a string or an object and handle accordingly
+      if (typeof data.response === 'string') {
         setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
+      } else if (typeof data.response === 'object' && data.response.message) {
+        // If data.response has nested properties, use message or other relevant keys
+        setMessages((prev) => [...prev, { text: data.response.message, sender: 'bot' }]);
+
+        // Optional: Log details if other keys like avgPowerLoss, hullCondition exist
+        if (data.response.avgPowerLoss || data.response.hullCondition || data.response.plot) {
+          console.log("Hull Performance Data:", {
+            avgPowerLoss: data.response.avgPowerLoss,
+            hullCondition: data.response.hullCondition,
+            plot: data.response.plot,
+          });
+        }
       } else {
         setMessages((prev) => [...prev, { text: 'No answer provided by bot.', sender: 'bot' }]);
       }
