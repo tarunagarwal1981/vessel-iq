@@ -21,6 +21,9 @@ const Chat = () => {
 
       const data = await response.json();
 
+      // Debugging line to inspect the structure of the data received from Lambda
+      console.log("Lambda Response Data:", data);
+
       if (data.response) {
         setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
       } else {
