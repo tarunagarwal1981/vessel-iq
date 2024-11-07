@@ -2,8 +2,14 @@
 
 import { useState } from 'react';
 
+type Message = {
+  text?: string;
+  sender: string;
+  image?: string;
+};
+
 const Chat = () => {
-  const [messages, setMessages] = useState([{ text: 'Welcome! How can I assist you today?', sender: 'bot' }]);
+  const [messages, setMessages] = useState<Message[]>([{ text: 'Welcome! How can I assist you today?', sender: 'bot' }]);
   const [input, setInput] = useState('');
 
   const fetchResponse = async (query: string) => {
@@ -26,11 +32,9 @@ const Chat = () => {
       if (typeof data.response === 'string') {
         setMessages((prev) => [...prev, { text: data.response, sender: 'bot' }]);
       } else if (typeof data.response === 'object') {
-        // Extracting additional data for hull performance if available
         const { message, avgPowerLoss, hullCondition, plot } = data.response;
 
-        // Create message array to add to the chat
-        const newMessages = [{ text: message || 'Hull performance data received', sender: 'bot' }];
+        const newMessages: Message[] = [{ text: message || 'Hull performance data received', sender: 'bot' }];
 
         if (avgPowerLoss !== undefined) {
           newMessages.push({ text: `Average Power Loss: ${avgPowerLoss.toFixed(2)}%`, sender: 'bot' });
@@ -40,7 +44,6 @@ const Chat = () => {
           newMessages.push({ text: `Hull Condition: ${hullCondition}`, sender: 'bot' });
         }
 
-        // Add image if plot is provided
         if (plot) {
           newMessages.push({ image: `data:image/png;base64,${plot}`, sender: 'bot' });
         }
@@ -96,7 +99,6 @@ const Chat = () => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {/* Check if message is text or image */}
               {msg.text && <p>{msg.text}</p>}
               {msg.image && <img src={msg.image} alt="Hull Performance Plot" style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }} />}
             </div>
