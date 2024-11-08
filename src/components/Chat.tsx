@@ -49,7 +49,8 @@ const Chat = () => {
           console.log('Plot data length:', data.response.plot.length); // Debug log
           
           newMessages.push({
-            image: `data:image/png;base64,${data.response.plot}`,
+            #image: `data:image/png;base64,${data.response.plot}`,
+            image: `${data.response.plot}`,
             sender: 'bot'
           });
 
