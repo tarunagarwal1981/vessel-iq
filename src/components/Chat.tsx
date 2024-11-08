@@ -44,24 +44,25 @@ const Chat = () => {
       }
 
       // Check for plot data
-      if (data.response && data.response.plot) {
-        console.log('Plot data found:', !!data.response.plot); // Debug log
-        console.log('Plot data length:', data.response.plot.length); // Debug log
+if (data.response && data.response.plot) {
+  console.log('Plot data found:', !!data.response.plot); // Debug log
+  console.log('Plot data length:', data.response.plot.length); // Debug log
 
-        // Use plot URL directly
-        newMessages.push({
-          image: data.response.plot,  // Use URL directly without any prefix
-          sender: 'bot'
-        });
+  // Assign image URL directly, without adding "data:image/png;base64," prefix
+  newMessages.push({
+    image: data.response.plot,  // Use the URL from the response directly
+    sender: 'bot'
+  });
 
-        // Add metadata as separate message if available
-        if (data.response.metadata) {
-          newMessages.push({
-            text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
-            sender: 'bot'
-          });
-        }
-      } else {
+  // Add metadata as a separate message if available
+  if (data.response.metadata) {
+    newMessages.push({
+      text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
+      sender: 'bot'
+    });
+  }
+}
+ else {
         console.log('No plot data in response');  // Debug log
       }
 
