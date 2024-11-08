@@ -91,7 +91,7 @@ const Chat = () => {
   };
 
   return (
-    <div style={{ display: 'flex', width: '140%', height: '100vh' }}>
+    <div style={{ display: 'flex', width: '120%', height: '100vh' }}>
       {/* Left Panel */}
       <div
         style={{
