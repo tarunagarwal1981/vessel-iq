@@ -15,73 +15,84 @@ const Chat = () => {
   const [input, setInput] = useState('');
 
   const fetchResponse = async (query: string) => {
-  const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
-  try {
-    console.log('Sending query:', query);  // Debug log
+    const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
+    try {
+      console.log('Sending query:', query);  // Debug log
 
-    const response = await fetch(lambdaUrl || '', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    });
+      const response = await fetch(lambdaUrl || '', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Received data:', data);  // Debug log
-
-    if (data.response) {
-      const newMessages: Message[] = [];
-
-      // Add text message
-      if (data.response.message) {
-        newMessages.push({
-          text: data.response.message,
-          sender: 'bot'
-        });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
       }
 
-      // Check for plot data
-if (data.response && data.response.plot) {
-  console.log('Plot data found:', !!data.response.plot); // Debug log
-  console.log('Plot data length:', data.response.plot.length); // Debug log
+      const data = await response.json();
+      console.log('Received data:', data);  // Debug log
 
-  // Assign image URL directly, without adding "data:image/png;base64," prefix
-  newMessages.push({
-    image: data.response.plot,  // Use the URL from the response directly
-    sender: 'bot'
-  });
+      if (data.response) {
+        const newMessages: Message[] = [];
 
-  // Add metadata as a separate message if available
-  if (data.response.metadata) {
-    newMessages.push({
-      text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
-      sender: 'bot'
-    });
-  }
-}
- else {
-        console.log('No plot data in response');  // Debug log
+        // Add main text message, if available
+        if (data.response.message) {
+          newMessages.push({
+            text: data.response.message,
+            sender: 'bot'
+          });
+        }
+
+        // Handle multiple or single plot URLs
+        if (data.response.plots) {
+          // Multiple plot URLs in data.response.plots
+          Object.keys(data.response.plots).forEach((plotType, index) => {
+            // Add a label for each plot, e.g., "Plot 1 - Laden Condition"
+            newMessages.push({
+              text: `Plot ${index + 1} - ${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
+              sender: 'bot'
+            });
+
+            // Add each plot URL as an image
+            newMessages.push({
+              image: data.response.plots[plotType],
+              sender: 'bot'
+            });
+          });
+        } else if (data.response.plot) {
+          // Single plot URL in data.response.plot
+          newMessages.push({
+            image: data.response.plot,
+            sender: 'bot'
+          });
+        } else {
+          console.log('No plot data in response');  // Debug log
+        }
+
+        // Add metadata as a separate message if available
+        if (data.response.metadata) {
+          newMessages.push({
+            text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
+            sender: 'bot'
+          });
+        }
+
+        console.log('New messages to add:', newMessages);  // Debug log
+        setMessages(prev => [...prev, ...newMessages]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { text: 'No answer provided by bot.', sender: 'bot' },
+        ]);
       }
-
-      console.log('New messages to add:', newMessages);  // Debug log
-      setMessages(prev => [...prev, ...newMessages]);
-    } else {
+    } catch (error) {
+      console.error('Error fetching response:', error);
       setMessages(prev => [
         ...prev,
-        { text: 'No answer provided by bot.', sender: 'bot' },
+        { text: 'Error fetching response. Please try again.', sender: 'bot' },
       ]);
     }
-  } catch (error) {
-    console.error('Error fetching response:', error);
-    setMessages(prev => [
-      ...prev,
-      { text: 'Error fetching response. Please try again.', sender: 'bot' },
-    ]);
-  }
-};
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +169,6 @@ if (data.response && data.response.plot) {
                     }}
                     onError={(e) => {
                       console.error('Image failed to load:', e);
-                      // Set a fallback or error message
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
