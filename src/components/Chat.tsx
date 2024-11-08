@@ -15,72 +15,72 @@ const Chat = () => {
   const [input, setInput] = useState('');
 
   const fetchResponse = async (query: string) => {
-    const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
-    try {
-      console.log('Sending query:', query);  // Debug log
-      
-      const response = await fetch(lambdaUrl || '', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
+  const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
+  try {
+    console.log('Sending query:', query);  // Debug log
 
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
+    const response = await fetch(lambdaUrl || '', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Received data:', data);  // Debug log
+
+    if (data.response) {
+      const newMessages: Message[] = [];
+
+      // Add text message
+      if (data.response.message) {
+        newMessages.push({
+          text: data.response.message,
+          sender: 'bot'
+        });
       }
 
-      const data = await response.json();
-      console.log('Received data:', data);  // Debug log
+      // Check for plot data
+      if (data.response && data.response.plot) {
+        console.log('Plot data found:', !!data.response.plot); // Debug log
+        console.log('Plot data length:', data.response.plot.length); // Debug log
 
-      if (data.response) {
-        const newMessages: Message[] = [];
+        // Use plot URL directly
+        newMessages.push({
+          image: data.response.plot,  // Use URL directly without any prefix
+          sender: 'bot'
+        });
 
-        // Add text message
-        if (data.response.message) {
+        // Add metadata as separate message if available
+        if (data.response.metadata) {
           newMessages.push({
-            text: data.response.message,
+            text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
             sender: 'bot'
           });
         }
-
-        // Check for plot data
-        if (data.response && data.response.plot) {
-          console.log('Plot data found:', !!data.response.plot); // Debug log
-          console.log('Plot data length:', data.response.plot.length); // Debug log
-          
-          newMessages.push({
-            //image: `data:image/png;base64,${data.response.plot}`,
-            image: `${data.response.plot}`,
-            sender: 'bot'
-          });
-
-          // Add metadata as separate message if available
-          if (data.response.metadata) {
-            newMessages.push({
-              text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
-              sender: 'bot'
-            });
-          }
-        } else {
-          console.log('No plot data in response');  // Debug log
-        }
-
-        console.log('New messages to add:', newMessages);  // Debug log
-        setMessages(prev => [...prev, ...newMessages]);
       } else {
-        setMessages(prev => [
-          ...prev,
-          { text: 'No answer provided by bot.', sender: 'bot' },
-        ]);
+        console.log('No plot data in response');  // Debug log
       }
-    } catch (error) {
-      console.error('Error fetching response:', error);
+
+      console.log('New messages to add:', newMessages);  // Debug log
+      setMessages(prev => [...prev, ...newMessages]);
+    } else {
       setMessages(prev => [
         ...prev,
-        { text: 'Error fetching response. Please try again.', sender: 'bot' },
+        { text: 'No answer provided by bot.', sender: 'bot' },
       ]);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching response:', error);
+    setMessages(prev => [
+      ...prev,
+      { text: 'Error fetching response. Please try again.', sender: 'bot' },
+    ]);
+  }
+};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
