@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type Message = {
   text?: string;
@@ -20,6 +20,15 @@ const Chat = () => {
     { text: 'Welcome! How can I assist you today?', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
+  const mapInstances = useRef<{ [key: string]: any }>({});
+
+  useEffect(() => {
+    return () => {
+      // Cleanup all map instances when component unmounts
+      Object.values(mapInstances.current).forEach(map => map.remove());
+      mapInstances.current = {};
+    };
+  }, []);
 
   const extractCoordinates = (mapUrl: string) => {
     try {
@@ -34,6 +43,12 @@ const Chat = () => {
   };
 
   const createMap = (containerId: string, lat: number, lon: number) => {
+    // Clean up existing map instance if it exists
+    if (mapInstances.current[containerId]) {
+      mapInstances.current[containerId].remove();
+      delete mapInstances.current[containerId];
+    }
+
     // Load Leaflet CSS
     if (!document.querySelector('link[href*="leaflet.css"]')) {
       const link = document.createElement('link');
@@ -61,22 +76,25 @@ const Chat = () => {
     const mapContainer = document.getElementById(containerId);
     if (!mapContainer) return;
 
-    // Clear existing map if any
-    mapContainer.innerHTML = '';
-
-    const map = window.L.map(containerId).setView([lat, lon], 10);
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    
-    window.L.marker([lat, lon]).addTo(map);
+    // Only create new map if one doesn't exist for this container
+    if (!mapInstances.current[containerId]) {
+      const map = window.L.map(containerId).setView([lat, lon], 10);
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      
+      window.L.marker([lat, lon]).addTo(map);
+      
+      // Store the map instance
+      mapInstances.current[containerId] = map;
+    }
   };
 
-  // Inside your fetchResponse function, update this part:
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       console.log('Sending query:', query);
+
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,6 +160,7 @@ const Chat = () => {
       ]);
     }
   };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
@@ -211,9 +230,11 @@ const Chat = () => {
                     id={`map-${messageId}`}
                     style={{ width: '100%', height: '400px', borderRadius: '10px' }}
                     ref={(el) => {
-                      if (el) {
-                        const { lat, lon } = extractCoordinates(msg.mapUrl!);
-                        createMap(`map-${messageId}`, lat, lon);
+                      if (el && msg.mapUrl) {
+                        const { lat, lon } = extractCoordinates(msg.mapUrl);
+                        requestAnimationFrame(() => {
+                          createMap(`map-${messageId}`, lat, lon);
+                        });
                       }
                     }}
                   />
