@@ -5,6 +5,7 @@ import { useState } from 'react';
 type Message = {
   text?: string;
   image?: string;
+  mapUrl?: string;
   sender: 'user' | 'bot';
 };
 
@@ -43,24 +44,27 @@ const Chat = () => {
           });
         }
 
+        // Handle map URL if present
+        if (data.response.mapUrl) {
+          newMessages.push({
+            mapUrl: data.response.mapUrl,
+            sender: 'bot'
+          });
+        }
+
         // Handle multiple or single plot URLs
         if (data.response.plots) {
-          // Multiple plot URLs in data.response.plots
           Object.keys(data.response.plots).forEach((plotType, index) => {
-            // Add a label for each plot, e.g., "Plot 1 - Laden Condition"
             newMessages.push({
               text: `Plot ${index + 1} - ${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
               sender: 'bot'
             });
-
-            // Add each plot URL as an image
             newMessages.push({
               image: data.response.plots[plotType],
               sender: 'bot'
             });
           });
         } else if (data.response.plot) {
-          // Single plot URL in data.response.plot
           newMessages.push({
             image: data.response.plot,
             sender: 'bot'
@@ -142,7 +146,7 @@ const Chat = () => {
               key={index}
               style={{
                 alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
-                maxWidth: msg.image ? '100%' : '80%',
+                maxWidth: msg.image || msg.mapUrl ? '100%' : '80%',
                 padding: '12px 18px',
                 margin: '10px 0',
                 borderRadius: '20px',
@@ -155,7 +159,14 @@ const Chat = () => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {msg.image ? (
+              {msg.mapUrl ? (
+                <iframe
+                  src={msg.mapUrl}
+                  width="100%"
+                  height="500px"
+                  style={{ border: 'none', borderRadius: '10px' }}
+                ></iframe>
+              ) : msg.image ? (
                 <div style={{ width: '100%' }}>
                   <img
                     src={msg.image}
