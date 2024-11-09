@@ -5,7 +5,7 @@ import { useState } from 'react';
 type Message = {
   text?: string;
   image?: string;
-  mapUrl?: string;
+  mapUrl?: string;  // New field for map URL
   sender: 'user' | 'bot';
 };
 
@@ -165,6 +165,7 @@ const Chat = () => {
                   width="100%"
                   height="500px"
                   style={{ border: 'none', borderRadius: '10px' }}
+                  title="Vessel Map"
                 ></iframe>
               ) : msg.image ? (
                 <div style={{ width: '100%' }}>
