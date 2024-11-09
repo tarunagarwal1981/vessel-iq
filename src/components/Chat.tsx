@@ -18,7 +18,7 @@ const Chat = () => {
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
-      console.log('Sending query:', query);  // Debug log
+      console.log('Sending query:', query);
 
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
@@ -31,7 +31,7 @@ const Chat = () => {
       }
 
       const data = await response.json();
-      console.log('Received data:', data);  // Debug log
+      console.log('Received data:', data);
 
       if (data.response) {
         const newMessages: Message[] = [];
@@ -70,7 +70,7 @@ const Chat = () => {
             sender: 'bot'
           });
         } else {
-          console.log('No plot data in response');  // Debug log
+          console.log('No plot data in response');
         }
 
         // Add metadata as a separate message if available
@@ -81,7 +81,7 @@ const Chat = () => {
           });
         }
 
-        console.log('New messages to add:', newMessages);  // Debug log
+        console.log('New messages to add:', newMessages);
         setMessages(prev => [...prev, ...newMessages]);
       } else {
         setMessages(prev => [
