@@ -90,7 +90,9 @@ const Chat = () => {
     }
   };
 
-  const fetchResponse = async (query: string) => {
+  // Update this function in your chat.tsx:
+
+const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       console.log('Sending query:', query);
@@ -111,7 +113,7 @@ const Chat = () => {
       if (data.response) {
         const newMessages: Message[] = [];
 
-        // Handle main message
+        // Handle main message first
         if (data.response.message) {
           newMessages.push({
             text: data.response.message,
@@ -119,28 +121,55 @@ const Chat = () => {
           });
         }
 
-        // Handle plots/map
+        // Handle plots/charts/maps
         if (data.response.plots) {
           Object.entries(data.response.plots).forEach(([plotType, url]) => {
             if (typeof url === 'string') {
-              // Check if URL is an OpenStreetMap URL
               if (url.includes('openstreetmap.org')) {
+                // Handle map URL
                 newMessages.push({
                   mapUrl: url,
                   sender: 'bot'
                 });
-              } else {
-                // Handle regular image plots
-                newMessages.push({
-                  text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
-                  sender: 'bot'
-                });
-                newMessages.push({
-                  image: url,
-                  sender: 'bot'
-                });
+              } else if (url.startsWith('http') || url.startsWith('https')) {
+                // Handle image plots (e.g., charts)
+                if (plotType !== 'position') {  // Skip if it's a position plot
+                  newMessages.push({
+                    text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
+                    sender: 'bot'
+                  });
+                  newMessages.push({
+                    image: url,
+                    sender: 'bot'
+                  });
+                }
               }
             }
+          });
+        }
+
+        // Handle single plot/chart if present
+        if (data.response.plot && !data.response.plots) {
+          if (typeof data.response.plot === 'string') {
+            if (data.response.plot.includes('openstreetmap.org')) {
+              newMessages.push({
+                mapUrl: data.response.plot,
+                sender: 'bot'
+              });
+            } else {
+              newMessages.push({
+                image: data.response.plot,
+                sender: 'bot'
+              });
+            }
+          }
+        }
+
+        // Handle metadata if present
+        if (data.response.metadata?.xAxisLabel && data.response.metadata?.yAxisLabel) {
+          newMessages.push({
+            text: `${data.response.metadata.xAxisLabel} vs ${data.response.metadata.yAxisLabel}`,
+            sender: 'bot'
           });
         }
 
@@ -160,6 +189,79 @@ const Chat = () => {
       ]);
     }
   };
+
+// Update the message rendering part in your JSX:
+
+{messages.map((msg, index) => {
+  const messageId = `message-${index}`;
+  
+  return (
+    <div
+      key={messageId}
+      style={{
+        alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
+        maxWidth: msg.image || msg.mapUrl ? '100%' : '80%',
+        padding: '12px 18px',
+        margin: '10px 0',
+        borderRadius: '20px',
+        backgroundColor: msg.sender === 'bot' 
+          ? 'rgba(255, 255, 255, 0.2)' 
+          : 'rgba(74, 144, 226, 0.2)',
+        color: '#f4f4f4',
+        backdropFilter: 'blur(5px)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+        transition: 'all 0.3s ease-in-out',
+      }}
+    >
+      {msg.text && (
+        <div style={{ marginBottom: msg.image || msg.mapUrl ? '10px' : '0' }}>
+          {msg.text}
+        </div>
+      )}
+      {msg.image && (
+        <div style={{ width: '100%' }}>
+          <img
+            src={msg.image}
+            alt="Chart"
+            style={{ 
+              width: '100%',
+              maxHeight: '500px',
+              objectFit: 'contain',
+              borderRadius: '10px',
+              marginBottom: '8px'
+            }}
+            onError={(e) => {
+              console.error('Image failed to load:', e);
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement!.innerHTML = 'Error loading image';
+            }}
+          />
+        </div>
+      )}
+      {msg.mapUrl && (
+        <div style={{ position: 'relative', width: '100%', height: '400px' }}>
+          <div
+            id={`map-${messageId}`}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              borderRadius: '10px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              zIndex: 1
+            }}
+            ref={(el) => {
+              if (el && msg.mapUrl) {
+                const { lat, lon } = extractCoordinates(msg.mapUrl);
+                createMap(`map-${messageId}`, lat, lon);
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+})}
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
