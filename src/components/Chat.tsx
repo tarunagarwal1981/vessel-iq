@@ -72,11 +72,11 @@ const Chat = () => {
     window.L.marker([lat, lon]).addTo(map);
   };
 
+  // Inside your fetchResponse function, update this part:
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       console.log('Sending query:', query);
-
       const response = await fetch(lambdaUrl || '', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,22 +101,27 @@ const Chat = () => {
           });
         }
 
-        // Handle map URL from plots
-        if (data.response.plots?.position) {
-          newMessages.push({
-            mapUrl: data.response.plots.position,
-            sender: 'bot'
-          });
-        }
-
-        // Handle other plots if present
+        // Handle plots/map
         if (data.response.plots) {
           Object.entries(data.response.plots).forEach(([plotType, url]) => {
-            if (plotType !== 'position' && typeof url === 'string') {
-              newMessages.push({
-                image: url,
-                sender: 'bot'
-              });
+            if (typeof url === 'string') {
+              // Check if URL is an OpenStreetMap URL
+              if (url.includes('openstreetmap.org')) {
+                newMessages.push({
+                  mapUrl: url,
+                  sender: 'bot'
+                });
+              } else {
+                // Handle regular image plots
+                newMessages.push({
+                  text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
+                  sender: 'bot'
+                });
+                newMessages.push({
+                  image: url,
+                  sender: 'bot'
+                });
+              }
             }
           });
         }
@@ -137,7 +142,6 @@ const Chat = () => {
       ]);
     }
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
