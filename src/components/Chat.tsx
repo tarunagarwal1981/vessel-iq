@@ -78,7 +78,11 @@ const Chat = () => {
 
     // Only create new map if one doesn't exist for this container
     if (!mapInstances.current[containerId]) {
-      const map = window.L.map(containerId).setView([lat, lon], 10);
+      const map = window.L.map(containerId, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+      }).setView([lat, lon], 10);
+
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
@@ -87,12 +91,15 @@ const Chat = () => {
       
       // Store the map instance
       mapInstances.current[containerId] = map;
+
+      // Invalidate size after a short delay
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 250);
     }
   };
 
-  // Update this function in your chat.tsx:
-
-const fetchResponse = async (query: string) => {
+  const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
       console.log('Sending query:', query);
@@ -110,10 +117,17 @@ const fetchResponse = async (query: string) => {
       const data = await response.json();
       console.log('Received data:', data);
 
-      if (data.response) {
-        const newMessages: Message[] = [];
+      const newMessages: Message[] = [];
 
-        // Handle main message first
+      // Handle different response formats
+      if (typeof data.response === 'string') {
+        // Direct text response
+        newMessages.push({
+          text: data.response,
+          sender: 'bot'
+        });
+      } else if (data.response) {
+        // Handle message from response object
         if (data.response.message) {
           newMessages.push({
             text: data.response.message,
@@ -126,18 +140,12 @@ const fetchResponse = async (query: string) => {
           Object.entries(data.response.plots).forEach(([plotType, url]) => {
             if (typeof url === 'string') {
               if (url.includes('openstreetmap.org')) {
-                // Handle map URL
                 newMessages.push({
                   mapUrl: url,
                   sender: 'bot'
                 });
-              } else if (url.startsWith('http') || url.startsWith('https')) {
-                // Handle image plots (e.g., charts)
-                if (plotType !== 'position') {  // Skip if it's a position plot
-                  newMessages.push({
-                    text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
-                    sender: 'bot'
-                  });
+              } else {
+                if (plotType !== 'position') {
                   newMessages.push({
                     image: url,
                     sender: 'bot'
@@ -148,39 +156,20 @@ const fetchResponse = async (query: string) => {
           });
         }
 
-        // Handle single plot/chart if present
+        // Handle single plot if present
         if (data.response.plot && !data.response.plots) {
           if (typeof data.response.plot === 'string') {
-            if (data.response.plot.includes('openstreetmap.org')) {
-              newMessages.push({
-                mapUrl: data.response.plot,
-                sender: 'bot'
-              });
-            } else {
-              newMessages.push({
-                image: data.response.plot,
-                sender: 'bot'
-              });
-            }
+            newMessages.push({
+              image: data.response.plot,
+              sender: 'bot'
+            });
           }
         }
-
-        // Handle metadata if present
-        if (data.response.metadata?.xAxisLabel && data.response.metadata?.yAxisLabel) {
-          newMessages.push({
-            text: `${data.response.metadata.xAxisLabel} vs ${data.response.metadata.yAxisLabel}`,
-            sender: 'bot'
-          });
-        }
-
-        console.log('New messages to add:', newMessages);
-        setMessages(prev => [...prev, ...newMessages]);
-      } else {
-        setMessages(prev => [
-          ...prev,
-          { text: 'No answer provided by bot.', sender: 'bot' },
-        ]);
       }
+
+      console.log('New messages to add:', newMessages);
+      setMessages(prev => [...prev, ...newMessages]);
+
     } catch (error) {
       console.error('Error fetching response:', error);
       setMessages(prev => [
@@ -189,79 +178,6 @@ const fetchResponse = async (query: string) => {
       ]);
     }
   };
-
-// Update the message rendering part in your JSX:
-
-{messages.map((msg, index) => {
-  const messageId = `message-${index}`;
-  
-  return (
-    <div
-      key={messageId}
-      style={{
-        alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
-        maxWidth: msg.image || msg.mapUrl ? '100%' : '80%',
-        padding: '12px 18px',
-        margin: '10px 0',
-        borderRadius: '20px',
-        backgroundColor: msg.sender === 'bot' 
-          ? 'rgba(255, 255, 255, 0.2)' 
-          : 'rgba(74, 144, 226, 0.2)',
-        color: '#f4f4f4',
-        backdropFilter: 'blur(5px)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-        transition: 'all 0.3s ease-in-out',
-      }}
-    >
-      {msg.text && (
-        <div style={{ marginBottom: msg.image || msg.mapUrl ? '10px' : '0' }}>
-          {msg.text}
-        </div>
-      )}
-      {msg.image && (
-        <div style={{ width: '100%' }}>
-          <img
-            src={msg.image}
-            alt="Chart"
-            style={{ 
-              width: '100%',
-              maxHeight: '500px',
-              objectFit: 'contain',
-              borderRadius: '10px',
-              marginBottom: '8px'
-            }}
-            onError={(e) => {
-              console.error('Image failed to load:', e);
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = 'Error loading image';
-            }}
-          />
-        </div>
-      )}
-      {msg.mapUrl && (
-        <div style={{ position: 'relative', width: '100%', height: '400px' }}>
-          <div
-            id={`map-${messageId}`}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              borderRadius: '10px',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              position: 'relative',
-              zIndex: 1
-            }}
-            ref={(el) => {
-              if (el && msg.mapUrl) {
-                const { lat, lon } = extractCoordinates(msg.mapUrl);
-                createMap(`map-${messageId}`, lat, lon);
-              }
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-})}
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
