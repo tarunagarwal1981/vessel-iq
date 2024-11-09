@@ -5,7 +5,7 @@ import { useState } from 'react';
 type Message = {
   text?: string;
   image?: string;
-  mapUrl?: string;  // New field for map URL
+  mapUrl?: string;
   sender: 'user' | 'bot';
 };
 
@@ -36,7 +36,7 @@ const Chat = () => {
       if (data.response) {
         const newMessages: Message[] = [];
 
-        // Add main text message, if available
+        // Handle main message
         if (data.response.message) {
           newMessages.push({
             text: data.response.message,
@@ -44,7 +44,7 @@ const Chat = () => {
           });
         }
 
-        // Handle map URL if present
+        // Handle mapUrl if present
         if (data.response.mapUrl) {
           newMessages.push({
             mapUrl: data.response.mapUrl,
@@ -52,31 +52,45 @@ const Chat = () => {
           });
         }
 
-        // Handle multiple or single plot URLs
+        // Handle plots/charts
         if (data.response.plots) {
-          Object.keys(data.response.plots).forEach((plotType, index) => {
-            newMessages.push({
-              text: `Plot ${index + 1} - ${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
-              sender: 'bot'
-            });
-            newMessages.push({
-              image: data.response.plots[plotType],
-              sender: 'bot'
-            });
+          Object.entries(data.response.plots).forEach(([plotType, url]) => {
+            // Check if the URL is for a map
+            if (typeof url === 'string' && url.includes('openstreetmap.org')) {
+              newMessages.push({
+                mapUrl: url,
+                sender: 'bot'
+              });
+            } else {
+              // Handle as regular plot/image
+              newMessages.push({
+                text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
+                sender: 'bot'
+              });
+              newMessages.push({
+                image: url as string,
+                sender: 'bot'
+              });
+            }
           });
         } else if (data.response.plot) {
-          newMessages.push({
-            image: data.response.plot,
-            sender: 'bot'
-          });
-        } else {
-          console.log('No plot data in response');
+          if (typeof data.response.plot === 'string' && data.response.plot.includes('openstreetmap.org')) {
+            newMessages.push({
+              mapUrl: data.response.plot,
+              sender: 'bot'
+            });
+          } else {
+            newMessages.push({
+              image: data.response.plot,
+              sender: 'bot'
+            });
+          }
         }
 
-        // Add metadata as a separate message if available
-        if (data.response.metadata) {
+        // Handle metadata
+        if (data.response.metadata?.xAxisLabel && data.response.metadata?.yAxisLabel) {
           newMessages.push({
-            text: `${data.response.metadata.xAxisLabel || 'Date'} vs ${data.response.metadata.yAxisLabel || 'Value'}`,
+            text: `${data.response.metadata.xAxisLabel} vs ${data.response.metadata.yAxisLabel}`,
             sender: 'bot'
           });
         }
@@ -107,6 +121,54 @@ const Chat = () => {
     }
   };
 
+  const renderMessageContent = (msg: Message) => {
+    if (msg.mapUrl) {
+      return (
+        <div style={{ width: '100%', height: '400px', position: 'relative' }}>
+          <iframe
+            src={msg.mapUrl}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            }}
+            title="Map View"
+          />
+        </div>
+      );
+    }
+    
+    if (msg.image) {
+      return (
+        <div style={{ width: '100%' }}>
+          <img
+            src={msg.image}
+            alt="Chart"
+            style={{ 
+              width: '100%',
+              maxHeight: '500px',
+              objectFit: 'contain',
+              borderRadius: '10px',
+              marginBottom: '8px'
+            }}
+            onError={(e) => {
+              console.error('Image failed to load:', e);
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+      );
+    }
+    
+    if (msg.text) {
+      return <div>{msg.text}</div>;
+    }
+    
+    return null;
+  };
+
   return (
     <div style={{ display: 'flex', width: '120%', height: '100vh' }}>
       {/* Left Panel */}
@@ -127,7 +189,9 @@ const Chat = () => {
           alt="VesselIQ Logo"
           style={{ width: '200px', height: '80px', marginBottom: '20px' }}
         />
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>VesselIQ</h1>
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>
+          VesselIQ
+        </h1>
         <p style={{ fontSize: '16px', textAlign: 'center', marginBottom: '20px' }}>
           Optimizing Maritime Performance
         </p>
@@ -159,35 +223,7 @@ const Chat = () => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {msg.mapUrl ? (
-                <iframe
-                  src={msg.mapUrl}
-                  width="100%"
-                  height="500px"
-                  style={{ border: 'none', borderRadius: '10px' }}
-                  title="Vessel Map"
-                ></iframe>
-              ) : msg.image ? (
-                <div style={{ width: '100%' }}>
-                  <img
-                    src={msg.image}
-                    alt="Chart"
-                    style={{ 
-                      width: '100%',
-                      maxHeight: '500px',
-                      objectFit: 'contain',
-                      borderRadius: '10px',
-                      marginBottom: '8px'
-                    }}
-                    onError={(e) => {
-                      console.error('Image failed to load:', e);
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-              ) : (
-                <div>{msg.text}</div>
-              )}
+              {renderMessageContent(msg)}
             </div>
           ))}
         </div>
