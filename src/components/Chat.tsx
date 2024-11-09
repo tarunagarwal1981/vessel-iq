@@ -1,21 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-
-// Dynamically import Leaflet components (client-side only)
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
+import { useState } from 'react';
 
 type Message = {
   text?: string;
@@ -24,25 +9,17 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
+declare global {
+  interface Window {
+    L: any;
+  }
+}
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     { text: 'Welcome! How can I assist you today?', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-
-  useEffect(() => {
-    // Load Leaflet CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-    document.head.appendChild(link);
-    setIsMapLoaded(true);
-    
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
 
   const extractCoordinates = (mapUrl: string) => {
     try {
@@ -56,53 +33,43 @@ const Chat = () => {
     }
   };
 
-  const renderMessageContent = (msg: Message) => {
-    if (msg.mapUrl && isMapLoaded) {
-      const { lat, lon } = extractCoordinates(msg.mapUrl);
-      return (
-        <div style={{ width: '100%', height: '400px' }}>
-          <MapContainer
-            center={[lat, lon]}
-            zoom={10}
-            style={{ width: '100%', height: '100%', borderRadius: '10px' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <Marker position={[lat, lon]} />
-          </MapContainer>
-        </div>
-      );
+  const createMap = (containerId: string, lat: number, lon: number) => {
+    // Load Leaflet CSS
+    if (!document.querySelector('link[href*="leaflet.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+      document.head.appendChild(link);
     }
-    
-    if (msg.image) {
-      return (
-        <div style={{ width: '100%' }}>
-          <img
-            src={msg.image}
-            alt="Chart"
-            style={{ 
-              width: '100%',
-              maxHeight: '500px',
-              objectFit: 'contain',
-              borderRadius: '10px',
-              marginBottom: '8px'
-            }}
-            onError={(e) => {
-              console.error('Image failed to load:', e);
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </div>
-      );
+
+    // Load Leaflet JS
+    if (!window.L) {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
+      script.onload = () => {
+        initializeMap(containerId, lat, lon);
+      };
+      document.head.appendChild(script);
+    } else {
+      initializeMap(containerId, lat, lon);
     }
+  };
+
+  const initializeMap = (containerId: string, lat: number, lon: number) => {
+    if (!window.L) return;
+
+    const mapContainer = document.getElementById(containerId);
+    if (!mapContainer) return;
+
+    // Clear existing map if any
+    mapContainer.innerHTML = '';
+
+    const map = window.L.map(containerId).setView([lat, lon], 10);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
     
-    if (msg.text) {
-      return <div>{msg.text}</div>;
-    }
-    
-    return null;
+    window.L.marker([lat, lon]).addTo(map);
   };
 
   const fetchResponse = async (query: string) => {
@@ -134,7 +101,7 @@ const Chat = () => {
           });
         }
 
-        // Handle map URL
+        // Handle map URL from plots
         if (data.response.plots?.position) {
           newMessages.push({
             mapUrl: data.response.plots.position,
@@ -146,10 +113,6 @@ const Chat = () => {
         if (data.response.plots) {
           Object.entries(data.response.plots).forEach(([plotType, url]) => {
             if (plotType !== 'position' && typeof url === 'string') {
-              newMessages.push({
-                text: `${plotType.charAt(0).toUpperCase() + plotType.slice(1)} Condition`,
-                sender: 'bot'
-              });
               newMessages.push({
                 image: url,
                 sender: 'bot'
@@ -218,27 +181,62 @@ const Chat = () => {
       <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
         {/* Chat Container */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              style={{
-                alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
-                maxWidth: msg.image || msg.mapUrl ? '100%' : '80%',
-                padding: '12px 18px',
-                margin: '10px 0',
-                borderRadius: '20px',
-                backgroundColor: msg.sender === 'bot' 
-                  ? 'rgba(255, 255, 255, 0.2)' 
-                  : 'rgba(74, 144, 226, 0.2)',
-                color: '#f4f4f4',
-                backdropFilter: 'blur(5px)',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-              {renderMessageContent(msg)}
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            const messageId = `message-${index}`;
+            
+            return (
+              <div
+                key={messageId}
+                style={{
+                  alignSelf: msg.sender === 'bot' ? 'flex-start' : 'flex-end',
+                  maxWidth: msg.image || msg.mapUrl ? '100%' : '80%',
+                  padding: '12px 18px',
+                  margin: '10px 0',
+                  borderRadius: '20px',
+                  backgroundColor: msg.sender === 'bot' 
+                    ? 'rgba(255, 255, 255, 0.2)' 
+                    : 'rgba(74, 144, 226, 0.2)',
+                  color: '#f4f4f4',
+                  backdropFilter: 'blur(5px)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+                  transition: 'all 0.3s ease-in-out',
+                }}
+              >
+                {msg.mapUrl ? (
+                  <div
+                    id={`map-${messageId}`}
+                    style={{ width: '100%', height: '400px', borderRadius: '10px' }}
+                    ref={(el) => {
+                      if (el) {
+                        const { lat, lon } = extractCoordinates(msg.mapUrl!);
+                        createMap(`map-${messageId}`, lat, lon);
+                      }
+                    }}
+                  />
+                ) : msg.image ? (
+                  <div style={{ width: '100%' }}>
+                    <img
+                      src={msg.image}
+                      alt="Chart"
+                      style={{ 
+                        width: '100%',
+                        maxHeight: '500px',
+                        objectFit: 'contain',
+                        borderRadius: '10px',
+                        marginBottom: '8px'
+                      }}
+                      onError={(e) => {
+                        console.error('Image failed to load:', e);
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div>{msg.text}</div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Input Area */}
