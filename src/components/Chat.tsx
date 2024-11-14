@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 type VesselScore = {
   vessel_score: number;
@@ -37,6 +39,40 @@ type Message = {
   metadata?: ResponseMetadata;
   sender: 'user' | 'bot';
   timestamp: number;
+};
+
+const extractCoordinates = (mapUrl: string): { lat: number; lon: number } => {
+  try {
+    const urlParams = new URLSearchParams(mapUrl);
+    const lat = parseFloat(urlParams.get('lat') || '0');
+    const lon = parseFloat(urlParams.get('lon') || '0');
+    
+    if (isNaN(lat) || isNaN(lon)) {
+      console.error('Invalid coordinates in URL');
+      return { lat: 0, lon: 0 };
+    }
+    
+    return { lat, lon };
+  } catch (error) {
+    console.error('Error extracting coordinates:', error);
+    return { lat: 0, lon: 0 };
+  }
+};
+
+const createMap = (elementId: string, lat: number, lon: number) => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  
+  // Clear any existing map instance
+  element.innerHTML = '';
+  
+  const map = L.map(element).setView([lat, lon], 13);
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  
+  L.marker([lat, lon]).addTo(map);
 };
 
 const ScoreCard = ({ score, label }: { score: number; label: string }) => (
@@ -94,13 +130,13 @@ const Chart = ({ url, title }: { url: string; title: string }) => (
 );
 
 const MessageBubble = ({ message }: { message: Message }) => {
-  const mapRef = useRef<string>(`map-${message.timestamp}`);
+  const mapId = useRef<string>(`map-${message.timestamp}`);
 
   useEffect(() => {
     if (message.mapUrl) {
       const { lat, lon } = extractCoordinates(message.mapUrl);
       requestAnimationFrame(() => {
-        createMap(mapRef.current, lat, lon);
+        createMap(mapId.current, lat, lon);
       });
     }
   }, [message.mapUrl]);
@@ -139,7 +175,7 @@ const MessageBubble = ({ message }: { message: Message }) => {
 
       {message.mapUrl && (
         <div 
-          ref={el => el && (el.id = mapRef.current)}
+          id={mapId.current}
           className="map-container"
         />
       )}
@@ -210,7 +246,6 @@ const Chat = () => {
   const processResponse = (data: any): Message[] => {
     const newMessages: Message[] = [];
     
-    // Process main response
     if (data.response) {
       newMessages.push({
         text: typeof data.response === 'string' ? data.response : data.response.message,
@@ -220,7 +255,6 @@ const Chat = () => {
       });
     }
 
-    // Process vessel scores if available
     if (data.data?.vessel_score?.metadata?.scores) {
       newMessages.push({
         scores: data.data.vessel_score.metadata.scores,
@@ -229,7 +263,6 @@ const Chat = () => {
       });
     }
 
-    // Process charts
     if (data.data?.hull_performance?.response?.plot || 
         data.data?.speed_consumption?.response?.plots) {
       newMessages.push({
@@ -242,7 +275,6 @@ const Chat = () => {
       });
     }
 
-    // Process map if available
     if (data.data?.position?.response?.plots?.plot) {
       newMessages.push({
         mapUrl: data.data.position.response.plots.plot,
@@ -295,15 +327,69 @@ const Chat = () => {
 
   return (
     <div className="chat-container">
-      {/* Your existing layout JSX */}
-      <style jsx global>{`
+      <div className="messages-container">
+        <AnimatePresence>
+          {messages.map((message, index) => (
+            <MessageBubble key={message.timestamp} message={message} />
+          ))}
+        </AnimatePresence>
+        <div ref={messagesEndRef} />
+      </div>
+      
+      <form onSubmit={handleSubmit} className="input-container">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={isLoading}
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Sending...' : 'Send'}
+        </button>
+      </form>
+
+      <style jsx>{`
         .chat-container {
           display: flex;
-          width: 120%;
+          flex-direction: column;
+          width: 100%;
           height: 100vh;
           background-color: #132337;
         }
-        /* Add your existing styles here */
+        .messages-container {
+          flex-grow: 1;
+          overflow-y: auto;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+        }
+        .input-container {
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          display: flex;
+          gap: 10px;
+        }
+        input {
+          flex-grow: 1;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+        }
+        button {
+          padding: 12px 24px;
+          border-radius: 8px;
+          border: none;
+          background: #1a73e8;
+          color: white;
+          cursor: pointer;
+        }
+        button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
       `}</style>
     </div>
   );
