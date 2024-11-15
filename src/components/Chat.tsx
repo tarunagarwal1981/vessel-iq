@@ -193,7 +193,7 @@ const Chat = () => {
       {/* Left Panel */}
       <div
         style={{
-          width: '30%',
+          width: '25%',
           background: 'linear-gradient(to bottom, #2c3e50, #34495e)',
           color: '#f4f4f4',
           padding: '40px',
@@ -219,7 +219,7 @@ const Chat = () => {
       </div>
 
       {/* Right Panel */}
-      <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
+      <div style={{ width: '75%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
         {/* Chat Container */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           {messages.map((msg, index) => {
