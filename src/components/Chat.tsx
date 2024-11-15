@@ -11,6 +11,24 @@ type Message = {
   isSynopsis?: boolean;
 };
 
+type SectionContent = {
+  title: string;
+  content: string;
+  plot?: string;
+  plots?: {
+    laden: string;
+    ballast: string;
+  };
+};
+
+type Sections = {
+  summary: string;
+  hull: SectionContent;
+  speed: SectionContent;
+  position: SectionContent;
+  recommendations: SectionContent;
+};
+
 declare global {
   interface Window {
     L: any;
@@ -35,7 +53,7 @@ const SynopsisMessage = ({
     }));
   };
 
-  const sections = {
+  const sections: Sections = {
     summary: text.split('\n\n')[0],
     hull: {
       title: "Hull Performance",
@@ -59,7 +77,7 @@ const SynopsisMessage = ({
       title: "Recommendations",
       content: text.match(/Recommendations:([^]*?)$/)?.[0] || ""
     }
-};
+  };
 
   return (
     <div style={{ width: '100%' }}>
@@ -67,8 +85,11 @@ const SynopsisMessage = ({
       <div style={{ marginBottom: '10px' }}>{sections.summary}</div>
       
       {/* Collapsible Sections */}
-      {Object.entries(sections).map(([key, section]) => {
+      {(Object.entries(sections) as [keyof Sections, SectionContent | string][]).map(([key, section]) => {
         if (key === 'summary') return null;
+        
+        // Type assertion since we know summary is the only string
+        const sectionContent = section as SectionContent;
         
         return (
           <div 
@@ -95,17 +116,17 @@ const SynopsisMessage = ({
                 cursor: 'pointer'
               }}
             >
-              <span>{section.title}</span>
+              <span>{sectionContent.title}</span>
               <span>{expandedSections[key] ? '▼' : '▶'}</span>
             </button>
             
             {expandedSections[key] && (
               <div style={{ padding: '10px' }}>
-                <div>{section.content}</div>
+                <div>{sectionContent.content}</div>
                 
-                {key === 'hull' && section.plot && (
+                {key === 'hull' && sectionContent.plot && (
                   <img 
-                    src={section.plot}
+                    src={sectionContent.plot}
                     alt="Hull Performance"
                     style={{
                       width: '100%',
@@ -115,10 +136,10 @@ const SynopsisMessage = ({
                   />
                 )}
                 
-                {key === 'speed' && section.plots && (
+                {key === 'speed' && sectionContent.plots && (
                   <>
                     <img 
-                      src={section.plots.laden}
+                      src={sectionContent.plots.laden}
                       alt="Laden Speed Consumption"
                       style={{
                         width: '100%',
@@ -127,7 +148,7 @@ const SynopsisMessage = ({
                       }}
                     />
                     <img 
-                      src={section.plots.ballast}
+                      src={sectionContent.plots.ballast}
                       alt="Ballast Speed Consumption"
                       style={{
                         width: '100%',
@@ -138,7 +159,7 @@ const SynopsisMessage = ({
                   </>
                 )}
                 
-                {key === 'position' && section.plot && (
+                {key === 'position' && sectionContent.plot && (
                   <div
                     id={`map-${messageId}-${key}`}
                     style={{ 
