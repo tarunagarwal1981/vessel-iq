@@ -38,11 +38,15 @@ declare global {
 const SynopsisMessage = ({ 
   text, 
   plots, 
-  messageId 
+  messageId,
+  createMap,
+  extractCoordinates
 }: { 
   text: string, 
   plots: { [key: string]: string }, 
-  messageId: string 
+  messageId: string,
+  createMap: (id: string, lat: number, lon: number) => void,
+  extractCoordinates: (url: string) => { lat: number, lon: number }
 }) => {
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
@@ -88,7 +92,6 @@ const SynopsisMessage = ({
       {(Object.entries(sections) as [keyof Sections, SectionContent | string][]).map(([key, section]) => {
         if (key === 'summary') return null;
         
-        // Type assertion since we know summary is the only string
         const sectionContent = section as SectionContent;
         
         return (
@@ -167,6 +170,14 @@ const SynopsisMessage = ({
                       height: '300px',
                       marginTop: '10px',
                       borderRadius: '10px'
+                    }}
+                    ref={(el) => {
+                      if (el && sectionContent.plot) {
+                        const { lat, lon } = extractCoordinates(sectionContent.plot);
+                        requestAnimationFrame(() => {
+                          createMap(`map-${messageId}-${key}`, lat, lon);
+                        });
+                      }
                     }}
                   />
                 )}
@@ -295,34 +306,35 @@ const Chat = () => {
             text: data.response.message,
             sender: 'bot'
           });
-        }
 
-        if (data.response.plots && !data.response.isSynopsis) {
-          Object.entries(data.response.plots).forEach(([plotType, url]) => {
-            if (typeof url === 'string') {
-              if (url.includes('openstreetmap.org')) {
-                newMessages.push({
-                  mapUrl: url,
-                  sender: 'bot'
-                });
-              } else {
-                if (plotType !== 'position') {
+          // Only add plots if not a synopsis message
+          if (data.response.plots && !data.response.isSynopsis) {
+            Object.entries(data.response.plots).forEach(([plotType, url]) => {
+              if (typeof url === 'string') {
+                if (url.includes('openstreetmap.org')) {
                   newMessages.push({
-                    image: url,
+                    mapUrl: url,
                     sender: 'bot'
                   });
+                } else {
+                  if (plotType !== 'position') {
+                    newMessages.push({
+                      image: url,
+                      sender: 'bot'
+                    });
+                  }
                 }
               }
-            }
-          });
-        }
-
-        if (data.response.plot && !data.response.plots) {
-          if (typeof data.response.plot === 'string') {
-            newMessages.push({
-              image: data.response.plot,
-              sender: 'bot'
             });
+          }
+
+          if (data.response.plot && !data.response.plots) {
+            if (typeof data.response.plot === 'string') {
+              newMessages.push({
+                image: data.response.plot,
+                sender: 'bot'
+              });
+            }
           }
         }
       }
@@ -350,6 +362,7 @@ const Chat = () => {
 
   return (
     <div style={{ display: 'flex', width: '120%', height: '100vh' }}>
+      {/* Left Panel */}
       <div
         style={{
           width: '25%',
@@ -377,6 +390,7 @@ const Chat = () => {
         </p>
       </div>
 
+      {/* Right Panel */}
       <div style={{ width: '75%', display: 'flex', flexDirection: 'column', backgroundColor: '#132337' }}>
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           {messages.map((msg, index) => {
@@ -405,6 +419,8 @@ const Chat = () => {
                     text={msg.text || ''} 
                     plots={msg.plots} 
                     messageId={messageId}
+                    createMap={createMap}
+                    extractCoordinates={extractCoordinates}
                   />
                 ) : msg.mapUrl ? (
                   <div
