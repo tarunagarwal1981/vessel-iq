@@ -270,29 +270,20 @@ const Chat = () => {
   const fetchResponse = async (query: string) => {
     const lambdaUrl = process.env.NEXT_PUBLIC_LAMBDA_URL;
     try {
-        console.log('Sending query:', query);
+      console.log('Sending query:', query);
 
-        // Create AbortController for timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 seconds timeout
+      const response = await fetch(lambdaUrl || '', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
 
-        const response = await fetch(lambdaUrl || '', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query }),
-            signal: controller.signal,
-            // Add timeout and keep-alive settings
-            keepalive: true,
-        });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
 
-        clearTimeout(timeoutId); // Clear timeout if request completes
-
-        if (!response.ok) {
-            throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Received data:', data);
+      const data = await response.json();
+      console.log('Received data:', data);
 
       const newMessages: Message[] = [];
 
