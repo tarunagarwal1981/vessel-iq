@@ -1,6 +1,9 @@
-[build]
-  command = "npm run build"
-  publish = ".next"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Connection = "keep-alive"
+    Keep-Alive = "timeout=90"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[functions]
+  node_bundler = "esbuild"
+  timeout = 90
