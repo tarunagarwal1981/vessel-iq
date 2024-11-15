@@ -39,12 +39,12 @@ const SynopsisMessage = ({
     summary: text.split('\n\n')[0],
     hull: {
       title: "Hull Performance",
-      content: text.match(/Hull Performance:.*?(?=\n\n|$)/s)?.[0] || "",
+      content: text.match(/Hull Performance:([^]*?)(?=\n\n|$)/)?.[0] || "",
       plot: plots.hull_performance
     },
     speed: {
       title: "Speed Performance",
-      content: text.match(/Speed Performance:.*?(?=\n\n|$)/s)?.[0] || "",
+      content: text.match(/Speed Performance:([^]*?)(?=\n\n|$)/)?.[0] || "",
       plots: {
         laden: plots.speed_consumption_laden,
         ballast: plots.speed_consumption_ballast
@@ -52,14 +52,14 @@ const SynopsisMessage = ({
     },
     position: {
       title: "Vessel Position",
-      content: text.match(/Current Position:.*?(?=\n\n|$)/s)?.[0] || "",
+      content: text.match(/Current Position:([^]*?)(?=\n\n|$)/)?.[0] || "",
       plot: plots.position
     },
     recommendations: {
       title: "Recommendations",
-      content: text.match(/Recommendations:[\s\S]*$/)?.[0] || ""
+      content: text.match(/Recommendations:([^]*?)$/)?.[0] || ""
     }
-  };
+};
 
   return (
     <div style={{ width: '100%' }}>
