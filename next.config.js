@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'standalone',
+    // Remove or comment out: output: 'standalone',
     images: {
         unoptimized: true
     },
-    // Add favicon configuration
     webpack: (config) => {
         config.module.rules.push({
             test: /\.(ico|png|svg|jpg|jpeg|gif)$/,
